@@ -1,5 +1,14 @@
 import json
 
+class GraphException(Exception):
+    """Generic Semantic Graph Exception"""
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
+        self.msg = msg
+
+    def __str__(self):
+        return repr(self.msg)
+
 class Node(object):
     def __init__(self, id, data):
       self.id = id
@@ -11,15 +20,6 @@ class Edge(object):
       self.src = src
       self.dst = dst
       self.data = data
-
-class GraphException(Exception):
-    """Generic Semantic Graph Exception"""
-    def __init__(self, msg):
-        Exception.__init__(self, msg)
-        self.msg = msg
-
-    def __str__(self):
-        return repr(self.msg)
 
 class Graph(object):
 
@@ -58,7 +58,7 @@ class Graph(object):
         self.nodes.append(Node(id, data))
         return id
 
-    def add_edge(self, src, dst, data):
+    def add_edge(self, src, dst, data = None):
         if self.node_id_exists(src) and self.node_id_exists(dst):
             id = self.create_edge_uid()
             self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id))
@@ -143,7 +143,7 @@ class Graph(object):
                 if e.data is not None:
                     edge.update(e.data)
                 graph["edges"].append(edge)
-            json.dump(graph, outfile)
+            json.dump(graph, outfile, indent=True)
 
     def load_gaia_json(self, filename):
         with open(filename, 'r') as infile:
@@ -171,6 +171,14 @@ class Graph(object):
 
                 if id > self.last_edge_id:
                     self.last_edge_id = id
+
+class Algorithms(object):
+
+    def __init_(self):
+        pass
+
+    def diff(self, g1, g2):
+        pass
 
 if __name__ == "__main__":
     print("Please import this module !")
