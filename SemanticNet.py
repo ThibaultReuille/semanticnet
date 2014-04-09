@@ -21,6 +21,12 @@ class Edge(object):
       self.dst = dst
       self.data = data
 
+class Event(object):
+    def __init__(self, timecode, name, attributes):
+        self.timecode = timecode
+        self.name = name
+        self.attributes = attributes
+
 class Graph(object):
 
     def __init__(self, verbose=False):
@@ -29,6 +35,7 @@ class Graph(object):
         self.last_node_id = -1
         self.edges = list()
         self.last_edge_id = -1
+        self.timeline = list()
         self.verbose = verbose
 
     def log(self, line):
@@ -58,7 +65,7 @@ class Graph(object):
         self.nodes.append(Node(id, data))
         return id
 
-    def add_edge(self, src, dst, data = None):
+    def add_edge(self, src, dst, data):
         if self.node_id_exists(src) and self.node_id_exists(dst):
             id = self.create_edge_uid()
             self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id))
@@ -109,12 +116,16 @@ class Graph(object):
         else:
             raise GraphException("Edge id '" + str(id) + "' isn't unique.")
 
+    def add_event(self, timecode, name, attributes):
+        self.timeline.append(Event(timecode, name, attributes))
+
     def save_json(self, filename):
         with open(filename, 'w') as outfile:
             graph = dict()
             graph["meta"] = self.meta
             graph["nodes"] = [ n.__dict__ for n in self.nodes ]
             graph["edges"] = [ e.__dict__ for e in self.edges ]
+            graph["timeline"] = [ [c.timecode, c.name, c.attributes] for c in self.timeline ]
             json.dump(graph, outfile)
 
     def load_json(self, filename):
@@ -143,6 +154,7 @@ class Graph(object):
                 if e.data is not None:
                     edge.update(e.data)
                 graph["edges"].append(edge)
+            graph["timeline"] = [ [c.timecode, c.name, c.attributes] for c in self.timeline ]
             json.dump(graph, outfile, indent=True)
 
     def load_gaia_json(self, filename):
