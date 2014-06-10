@@ -16,7 +16,4 @@ graph.add_edge(a, b, {"type" : "belongs"})
 graph.add_edge(b, c, {"type" : "owns"})
 graph.add_edge(c, a, {"type" : "has"})
 
-graph.save_gaia_json("output.json")
-
-
-
+graph.save_json("output.json")
