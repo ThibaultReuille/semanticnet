@@ -109,7 +109,7 @@ class Graph:
                 for key in self.g.edge[i][j]
             ]
             graph["timeline"] = [ [c.timecode, c.name, c.attributes] for c in self.timeline ]
-            json.dump(graph, outfile)
+            json.dump(graph, outfile, indent=True)
 
     def load_json(self, filename):
         with open(filename, 'r') as infile:
