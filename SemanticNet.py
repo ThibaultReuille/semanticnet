@@ -44,53 +44,53 @@ class Graph:
         return self.last_edge_id
 
     def add_node(self, data):   
-        id = self.create_node_uid()
-        self.log("add_node " + str(data) + " = " + str(id)) 
-        self._g.add_node(id, data)
-        return id
+        id_ = self.create_node_uid()
+        self.log("add_node " + str(data) + " = " + str(id_))
+        self._g.add_node(id_, data)
+        return id_
 
     def add_edge(self, src, dst, data={}):
         if self._g.has_node(src) and self._g.has_node(dst):
-            id = self.create_edge_uid()
-            self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id))
-            self._g.add_edge(src, dst, id, dict(chain(data.items(), {"id": id}.items())) )
-            self.edges[id] = self._g.edge[src][dst][id]
-            return id
+            id_ = self.create_edge_uid()
+            self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id_))
+            self._g.add_edge(src, dst, id_, dict(chain(data.items(), {"id": id_}.items())) )
+            self.edges[id_] = self._g.edge[src][dst][id_]
+            return id_
         else:
             raise GraphException("Node ID not found, can't create edge.")
 
-    def set_node_attribute(self, id, attr_name, value):
-        if self._g.has_node(id):
+    def set_node_attribute(self, id_, attr_name, value):
+        if self._g.has_node(id_):
             if attr_name in self.attr_reserved:
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
 
-            self._g.node[id][attr_name] = value
+            self._g.node[id_][attr_name] = value
         else:
             raise GraphException("Node id not found, can't set attribute.")
 
-    def get_node_attribute(self, id, attr_name):
-        if self._g.has_node(id):
-            return self._g.node[id][attr_name]
+    def get_node_attribute(self, id_, attr_name):
+        if self._g.has_node(id_):
+            return self._g.node[id_][attr_name]
         else:
             raise GraphException("Node ID not found, can't get attribute")
 
-    def set_edge_attribute(self, id, attr_name, value):
-        if id in self.edges:
+    def set_edge_attribute(self, id_, attr_name, value):
+        if id_ in self.edges:
             if attr_name in self.attr_reserved:
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
 
-            self.edges[id][attr_name] = value
+            self.edges[id_][attr_name] = value
         else:
-            raise GraphException("Edge id '" + str(id) + "' not found!")
+            raise GraphException("Edge id '" + str(id_) + "' not found!")
 
-    def get_edge_attribute(self, id, attr_name):
-        if id in self.edges:
-            if attr_name in self.edges[id]:
-                return self.edges[id][attr_name]
+    def get_edge_attribute(self, id_, attr_name):
+        if id_ in self.edges:
+            if attr_name in self.edges[id_]:
+                return self.edges[id_][attr_name]
             else:
                 return None
         else:
-            raise GraphException("Edge id '" + str(id) + "' not found!")
+            raise GraphException("Edge id '" + str(id_) + "' not found!")
 
     def add_event(self, timecode, name, attributes):
         self.timeline.append(Event(timecode, name, attributes))
