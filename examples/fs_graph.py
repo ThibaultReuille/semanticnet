@@ -23,6 +23,7 @@ if __name__ == "__main__":
         path = ""
 
         if os.path.islink(root):
+            data = {"type": "link"}
             root = os.path.realpath(root)
 
         path = os.path.join(root, label)
@@ -32,9 +33,6 @@ if __name__ == "__main__":
         else:
             node = graph.add_node({"type": node_type, "label": label})
             nodesByName[path] = node
-
-        if os.path.islink(path):
-            data = {"type": "link"}
 
         graph.add_edge(cur, node, data)
 
