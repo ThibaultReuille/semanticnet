@@ -1,5 +1,6 @@
 import networkx as nx
 import json
+import uuid
 from itertools import chain
 
 class GraphException(Exception):
@@ -21,43 +22,49 @@ class Graph:
     def __init__(self, verbose=False):
         self._g = nx.MultiGraph()
         self.edges = {}
-
-        self.verbose = verbose
-        self.last_node_id = -1
-        self.last_edge_id = -1
-
         self.meta = {}
         self.timeline = []
 
+        self.verbose = verbose
         self.attr_reserved = ["id", "src", "dst"]
+
+    def _create_uuid(self):
+        id_ = uuid.uuid4()
+        while self._g.has_node(id_) or id_ in self.edges:
+            id_ = uuid.uuid4()
+        return id_
 
     def log(self, line):
         if self.verbose:
             print("[SemanticNet] " + line)
 
-    def create_node_uid(self):
-        self.last_node_id += 1
-        return self.last_node_id
+    def add_node(self, data={}, id_=None):
+        if id_ == None:
+            id_ = self._create_uuid()
 
-    def create_edge_uid(self):
-        self.last_edge_id += 1
-        return self.last_edge_id
-
-    def add_node(self, data):   
-        id_ = self.create_node_uid()
         self.log("add_node " + str(data) + " = " + str(id_))
         self._g.add_node(id_, data)
         return id_
 
-    def add_edge(self, src, dst, data={}):
+    def __remove_node(self, id_):
+        '''TODO: Remove node id_'''
+        pass
+
+    def add_edge(self, src, dst, data={}, id_=None):
+        if id_ == None:
+            id_ = self._create_uuid()
+
         if self._g.has_node(src) and self._g.has_node(dst):
-            id_ = self.create_edge_uid()
             self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id_))
             self._g.add_edge(src, dst, id_, dict(chain(data.items(), {"id": id_}.items())) )
             self.edges[id_] = self._g.edge[src][dst][id_]
             return id_
         else:
             raise GraphException("Node ID not found, can't create edge.")
+
+    def __remove_edge(self, id_):
+        '''TODO: Remove edge id_.'''
+        pass
 
     def set_node_attribute(self, id_, attr_name, value):
         if self._g.has_node(id_):
@@ -68,11 +75,23 @@ class Graph:
         else:
             raise GraphException("Node id not found, can't set attribute.")
 
+    def get_nodes(self):
+        return self._g.nodes()
+
     def get_node_attribute(self, id_, attr_name):
         if self._g.has_node(id_):
             return self._g.node[id_][attr_name]
         else:
             raise GraphException("Node ID not found, can't get attribute")
+
+    def get_node_attributes(self, id_):
+        if self._g.has_node(id_):
+            return self._g.node[id_]
+        else:
+            raise GraphException("Node ID not found, can't get attribute")
+
+    def get_edges(self):
+        return self.edges
 
     def set_edge_attribute(self, id_, attr_name, value):
         if id_ in self.edges:
@@ -80,6 +99,12 @@ class Graph:
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
 
             self.edges[id_][attr_name] = value
+        else:
+            raise GraphException("Edge id '" + str(id_) + "' not found!")
+
+    def get_edge_attributes(self, id_):
+        if id_ in self.edges:
+            return self.edges[id_]
         else:
             raise GraphException("Edge id '" + str(id_) + "' not found!")
 
@@ -99,11 +124,13 @@ class Graph:
         with open(filename, 'w') as outfile:
             graph = dict()
             graph["meta"] = self.meta
-            graph["nodes"] = [ dict(chain({"id": i}.items(), self._g.node[i].items())) for i in self._g.nodes() ]
-            graph["edges"] = [ dict(
-                chain(
-                    { "src": i, "dst": j, "id": key}.items(),
-                    self._g.edge[i][j][key].items())
+            graph["nodes"] = [ dict(chain({"id": id_.hex}.items(), self._g.node[id_].items())) for id_ in self._g.nodes() ]
+            graph["edges"] = [
+                dict(
+                    chain(
+                        { "src": i.hex, "dst": j.hex, "id": key.hex}.items(),
+                        [ item for item in self._g.edge[i][j][key].items() if item[0] != 'id' ]
+                    )
                 )
                 for i, j in self._g.edges()
                 for key in self._g.edge[i][j]
@@ -118,13 +145,20 @@ class Graph:
             self.timeline = graph["timeline"]
 
             for node in graph["nodes"]:
-                self._g.add_node(node["id"], dict([item for item in node.items() if item[0] != 'id']))
+                self._g.add_node(uuid.UUID(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
 
             for edge in graph["edges"]:
-                self._g.add_edge(edge["src"], edge["dst"], dict(item for item in edge.items() if (item[0] != "src" and item[0] != "dst") ))
-
-            self.last_node_id = len(self._g.nodes())
-            self.last_edge_id = len(self._g.edges())
+                src = uuid.UUID(edge["src"])
+                dst = uuid.UUID(edge["dst"])
+                id_ = uuid.UUID(edge["id"]) if edge["id"] != None else self._create_uuid()
+                self.add_edge(
+                    src,
+                    dst,
+                    dict(item for item in edge.items()
+                        if (item[0] != "src" and item[0] != "dst" and item[0] != "id") ),
+                    id_
+                )
+                self._g.edge[src][dst][id_]["id"] = id_
 
 if __name__ == "__main__":
     print("Please import this module !")
