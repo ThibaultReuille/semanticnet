@@ -34,6 +34,12 @@ class Graph:
             id_ = uuid.uuid4()
         return id_
 
+    def _extract_uuid(self, id_):
+        if id_.__class__.__name__ == 'UUID':
+            return id_
+
+        return uuid.UUID(id_)
+
     def log(self, line):
         if self.verbose:
             print("[SemanticNet] " + line)
@@ -41,6 +47,8 @@ class Graph:
     def add_node(self, data={}, id_=None):
         if id_ == None:
             id_ = self._create_uuid()
+        else:
+            id_ = self._extract_uuid(id_)
 
         self.log("add_node " + str(data) + " = " + str(id_))
         self._g.add_node(id_, data)
@@ -51,22 +59,37 @@ class Graph:
         pass
 
     def add_edge(self, src, dst, data={}, id_=None):
+        src = self._extract_uuid(src)
+        dst = self._extract_uuid(dst)
+
         if id_ == None:
             id_ = self._create_uuid()
+        else:
+            id_ = self._extract_uuid(id_)
 
         if self._g.has_node(src) and self._g.has_node(dst):
             self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id_))
-            self._g.add_edge(src, dst, id_, dict(chain(data.items(), {"id": id_}.items())) )
+            self._g.add_edge(src, dst, id_,
+                dict(chain(data.items(),
+                    {
+                        "id": id_,
+                        "src": src,
+                        "dst": dst
+                    }.items())
+                )
+            )
             self.edges[id_] = self._g.edge[src][dst][id_]
             return id_
         else:
-            raise GraphException("Node ID not found, can't create edge.")
+            raise GraphException("Node ID not found.")
 
     def __remove_edge(self, id_):
         '''TODO: Remove edge id_.'''
         pass
 
     def set_node_attribute(self, id_, attr_name, value):
+        id_ = self._extract_uuid(id_)
+
         if self._g.has_node(id_):
             if attr_name in self.attr_reserved:
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
@@ -79,12 +102,14 @@ class Graph:
         return self._g.nodes()
 
     def get_node_attribute(self, id_, attr_name):
+        id_ = self._extract_uuid(id_)
         if self._g.has_node(id_):
             return self._g.node[id_][attr_name]
         else:
             raise GraphException("Node ID not found, can't get attribute")
 
     def get_node_attributes(self, id_):
+        id_ = self._extract_uuid(id_)
         if self._g.has_node(id_):
             return self._g.node[id_]
         else:
@@ -93,7 +118,15 @@ class Graph:
     def get_edges(self):
         return self.edges
 
+    def get_edge(self, id_):
+        id_ = self._extract_uuid(id_)
+        if id_ in self.edges:
+            return self.edges[id_]
+        else:
+            raise GraphException('Node ID not found.')
+
     def set_edge_attribute(self, id_, attr_name, value):
+        id_ = self._extract_uuid(id_)
         if id_ in self.edges:
             if attr_name in self.attr_reserved:
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
@@ -103,12 +136,14 @@ class Graph:
             raise GraphException("Edge id '" + str(id_) + "' not found!")
 
     def get_edge_attributes(self, id_):
+        id_ = self._extract_uuid(id_)
         if id_ in self.edges:
             return self.edges[id_]
         else:
             raise GraphException("Edge id '" + str(id_) + "' not found!")
 
     def get_edge_attribute(self, id_, attr_name):
+        id_ = self._extract_uuid(id_)
         if id_ in self.edges:
             if attr_name in self.edges[id_]:
                 return self.edges[id_][attr_name]
@@ -129,7 +164,11 @@ class Graph:
                 dict(
                     chain(
                         { "src": i.hex, "dst": j.hex, "id": key.hex}.items(),
-                        [ item for item in self._g.edge[i][j][key].items() if item[0] != 'id' ]
+                        [ item for item in self._g.edge[i][j][key].items()
+                            if  item[0] != 'id' and
+                                item[0] != 'src' and
+                                item[0] != 'dst'
+                        ]
                     )
                 )
                 for i, j in self._g.edges()
