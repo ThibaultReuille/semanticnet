@@ -54,9 +54,19 @@ class Graph:
         self._g.add_node(id_, data)
         return id_
 
-    def __remove_node(self, id_):
-        '''TODO: Remove node id_'''
-        pass
+    def remove_node(self, id_):
+        '''Removes node id_.'''
+        id_ = self._extract_uuid(id_)
+        if self._g.has_node(id_):
+            for neighbor in self._g.neighbors(id_):
+                # need to iterate over items() (which copies the dict) because we are
+                # removing items from the edges dict as we are iterating over it
+                for edge in self._g.edge[id_][neighbor].items():
+                    # edge[0] is the edge's ID
+                    self.remove_edge(self._g.edge[id_][neighbor][edge[0]]["id"])
+            self._g.remove_node(id_)
+        else:
+            raise GraphException("Node ID not found.")
 
     def add_edge(self, src, dst, data={}, id_=None):
         src = self._extract_uuid(src)
@@ -83,9 +93,15 @@ class Graph:
         else:
             raise GraphException("Node ID not found.")
 
-    def __remove_edge(self, id_):
-        '''TODO: Remove edge id_.'''
-        pass
+    def remove_edge(self, id_):
+        '''Removes edge id_.'''
+        id_ = self._extract_uuid(id_)
+        if id_ in self.edges:
+            edge = self.edges[id_]
+            self._g.remove_edge(edge["src"], edge["dst"], id_)
+            del self.edges[id_]
+        else:
+            raise GraphException("Node ID not found.")
 
     def set_node_attribute(self, id_, attr_name, value):
         id_ = self._extract_uuid(id_)
