@@ -130,7 +130,7 @@ class Graph:
 
     def get_nodes(self):
         '''Returns a list of all nodes in the graph.'''
-        return self._g.nodes()
+        return dict([ (id_, self._g.node[id_]) for id_ in self._g.nodes() ])
 
     def get_node_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name of node id_.'''
