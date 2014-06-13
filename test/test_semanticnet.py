@@ -2,6 +2,7 @@ import pytest
 import semanticnet.SemanticNet as sn
 import uuid
 import os
+import time
 
 ### FIXTURES ###
 @pytest.fixture
@@ -67,6 +68,15 @@ def test__create_uuid(graph):
 def test__extract_uuid(graph, uuid_str, uuid_obj):
     assert graph._extract_uuid(uuid_str) == uuid_obj
 
+def test_add_event(graph):
+    t = time.time()
+    e = sn.Event(t, "Generic Event", {"type": "test"})
+    graph.add_event(e.timecode, e.name, e.attributes)
+    in_timeline = graph.timeline[0]
+    assert e.timecode == in_timeline.timecode
+    assert e.name == in_timeline.name
+    assert e.attributes == in_timeline.attributes
+
 def test_add_node(graph):
     a = graph.add_node({"type": "A"})
 
@@ -90,6 +100,14 @@ def test_get_node_attribute(populated_graph):
     assert populated_graph.get_node_attribute('2cdfebf3bf9547f19f0412ccdfbe03b7', 'type') == 'B'
     assert populated_graph.get_node_attribute('3cd197c2cf5e42dc9ccd0c2adcaf4bc2', 'type') == 'C'
 
+    with pytest.raises(sn.GraphException):
+        populated_graph.get_node_attribute('3caaa8c09148493dbdf02c57deadbeef', 'type')
+
+def test_get_node_attributes(populated_graph):
+    assert populated_graph.get_node_attributes('3caaa8c09148493dbdf02c574b95526c') == {"type": "A"}
+    with pytest.raises(sn.GraphException):
+        populated_graph.get_node_attributes('3caaa8c09148493dbdf02c57deadbeef')
+
 def test_set_node_attribute(populated_graph):
     populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth', 5)
     assert populated_graph.get_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth') == 5
@@ -97,6 +115,15 @@ def test_set_node_attribute(populated_graph):
     populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'type', 'D')
     assert populated_graph.get_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'type') != 'A'
     assert populated_graph.get_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'type') == 'D'
+
+    # set non-existant edge
+    with pytest.raises(sn.GraphException):
+        populated_graph.set_node_attribute('3caaa8c09148493dbdf02c57deadbeef', 'depht', 5)
+
+    # set reserved attribute
+    with pytest.raises(sn.GraphException):
+        populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'id',
+            '3caaa8c09148493dbdf02c57deadbeef')
 
 def test_add_edge(graph):
     a = graph.add_node({"type": "A"})
@@ -109,6 +136,22 @@ def test_add_edge(graph):
     attrs = graph.get_edge_attributes(e)
     assert "type" in attrs
     assert attrs["type"] == "normal"
+
+    with pytest.raises(sn.GraphException):
+        graph.add_edge(a, '3caaa8c09148493dbdf02c57deadbeef')
+
+def test_get_edge(populated_graph):
+    assert ( populated_graph.get_edge('7eb91be5-4d37-46b8-9a61-a282bcc207bb') ==
+        {
+            'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+            'type': 'normal',
+            'id': uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb')
+        }
+    )
+
+    with pytest.raises(sn.GraphException):
+        populated_graph.get_edge('7eb91be5-4d37-46b8-9a61-a282deadbeef')
 
 def test_get_edges(populated_graph):
     output = {
@@ -136,6 +179,27 @@ def test_get_edges(populated_graph):
 def test_get_edge_attribute(populated_graph):
     assert populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'type') == 'normal'
 
+    # get nonexistent edge attribute on a valid edge
+    assert populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'weight') == None
+
+    # nonexistent id
+    with pytest.raises(sn.GraphException):
+        populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d51deadbeef', 'type')
+
+def test_get_edge_attributes(populated_graph):
+    assert ( populated_graph.get_edge_attributes('5f5f44ec7c0144e29c5b7d513f92d9ab') ==
+        {
+            "type": "normal",
+            "src": uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            "dst": uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            "id": uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab')
+        }
+    )
+
+    # nonexistent id
+    with pytest.raises(sn.GraphException):
+        populated_graph.get_edge_attributes('5f5f44ec7c0144e29c5b7d51deadbeef')
+
 def test_set_edge_attribute(populated_graph):
     populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'weight', 5)
     assert populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'weight') == 5
@@ -144,9 +208,28 @@ def test_set_edge_attribute(populated_graph):
     assert populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'type') != 'normal'
     assert populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'type') == 'irregular'
 
+    # nonexistent id
+    with pytest.raises(sn.GraphException):
+        populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d51deadbeef', 'weight', 5)
+
+    # set reserved attribute
+    with pytest.raises(sn.GraphException):
+        populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'id',
+            '5f5f44ec7c0144e29c5b7d51deadbeef')
+
+    with pytest.raises(sn.GraphException):
+        populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'src',
+            '3caaa8c09148493dbdf02c57deadbeef')
+
+    with pytest.raises(sn.GraphException):
+        populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'dst',
+            '3caaa8c09148493dbdf02c57deadbeef')
+
 def test_remove_edge(populated_graph):
     populated_graph.remove_edge('5f5f44ec7c0144e29c5b7d513f92d9ab')
     assert uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab') not in populated_graph.get_edges()
+    with pytest.raises(sn.GraphException):
+        populated_graph.remove_edge('5f5f44ec7c0144e29c5b7d51deadbeef')
 
 def test_remove_node(populated_graph):
     node_a_id = uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
@@ -170,6 +253,9 @@ def test_remove_node(populated_graph):
     assert edge_a_b_id not in edges
     assert edge_a_c_id not in edges
     assert edge_b_c_id in edges
+
+    with pytest.raises(sn.GraphException):
+        populated_graph.remove_node('3caaa8c09148493dbdf02c57deadbeef')
 
 def test_save_json(test_output, correct_output):
     assert test_output == correct_output
