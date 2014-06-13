@@ -23,7 +23,7 @@ class Graph:
 
     def __init__(self, verbose=False):
         self._g = nx.MultiGraph()
-        self.edges = {}
+        self._edges = {}
         self.meta = {}
         self.timeline = []
 
@@ -33,7 +33,7 @@ class Graph:
     def _create_uuid(self):
         '''Create a random UUID for a new node or edge. Checks for collisions.'''
         id_ = uuid.uuid4()
-        while self._g.has_node(id_) or id_ in self.edges:
+        while self._g.has_node(id_) or id_ in self._edges:
             id_ = uuid.uuid4()
         return id_
 
@@ -101,7 +101,7 @@ class Graph:
                     }.items())
                 )
             )
-            self.edges[id_] = self._g.edge[src][dst][id_]
+            self._edges[id_] = self._g.edge[src][dst][id_]
             return id_
         else:
             raise GraphException("Node ID not found.")
@@ -109,10 +109,10 @@ class Graph:
     def remove_edge(self, id_):
         '''Removes edge id_.'''
         id_ = self._extract_uuid(id_)
-        if id_ in self.edges:
-            edge = self.edges[id_]
+        if id_ in self._edges:
+            edge = self._edges[id_]
             self._g.remove_edge(edge["src"], edge["dst"], id_)
-            del self.edges[id_]
+            del self._edges[id_]
         else:
             raise GraphException("Node ID not found.")
 
@@ -150,41 +150,41 @@ class Graph:
 
     def get_edges(self):
         '''Returns all edges in the graph.'''
-        return self.edges
+        return self._edges
 
     def get_edge(self, id_):
         '''Returns edge id_.'''
         id_ = self._extract_uuid(id_)
-        if id_ in self.edges:
-            return self.edges[id_]
+        if id_ in self._edges:
+            return self._edges[id_]
         else:
             raise GraphException('Node ID not found.')
 
     def set_edge_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for edge id_.'''
         id_ = self._extract_uuid(id_)
-        if id_ in self.edges:
+        if id_ in self._edges:
             if attr_name in self.attr_reserved:
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
 
-            self.edges[id_][attr_name] = value
+            self._edges[id_][attr_name] = value
         else:
             raise GraphException("Edge id '" + str(id_) + "' not found!")
 
     def get_edge_attributes(self, id_):
         '''Returns all attributes for edge id_.'''
         id_ = self._extract_uuid(id_)
-        if id_ in self.edges:
-            return self.edges[id_]
+        if id_ in self._edges:
+            return self._edges[id_]
         else:
             raise GraphException("Edge id '" + str(id_) + "' not found!")
 
     def get_edge_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name for edge id_.'''
         id_ = self._extract_uuid(id_)
-        if id_ in self.edges:
-            if attr_name in self.edges[id_]:
-                return self.edges[id_][attr_name]
+        if id_ in self._edges:
+            if attr_name in self._edges[id_]:
+                return self._edges[id_][attr_name]
             else:
                 return None
         else:
