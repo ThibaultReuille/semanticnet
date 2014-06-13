@@ -59,6 +59,7 @@ class Graph:
         else:
             id_ = self._extract_uuid(id_)
 
+        data['id'] = id_ # add the ID to the attributes
         self.log("add_node " + str(data) + " = " + str(id_))
         self._g.add_node(id_, data)
         return id_
@@ -198,7 +199,7 @@ class Graph:
         with open(filename, 'w') as outfile:
             graph = dict()
             graph["meta"] = self.meta
-            graph["nodes"] = [ dict(chain({"id": id_.hex}.items(), self._g.node[id_].items())) for id_ in self._g.nodes() ]
+            graph["nodes"] = [ dict(chain(self._g.node[id_].items(), {"id": id_.hex}.items())) for id_ in self._g.nodes() ]
             graph["edges"] = [
                 dict(
                     chain(

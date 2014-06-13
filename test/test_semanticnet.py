@@ -89,9 +89,18 @@ def test_add_node(graph):
 
 def test_get_nodes(populated_graph):
     output = {
-        uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'): {'type': 'B'},
-        uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'): {'type': 'A'},
-        uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'): {'type': 'C'}
+        uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'): {
+            "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+            'type': 'B'
+        },
+        uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'): {
+            "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            'type': 'A'
+        },
+        uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'): {
+            "id": uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+            'type': 'C'
+        }
     }
     assert populated_graph.get_nodes() == output
 
@@ -104,7 +113,12 @@ def test_get_node_attribute(populated_graph):
         populated_graph.get_node_attribute('3caaa8c09148493dbdf02c57deadbeef', 'type')
 
 def test_get_node_attributes(populated_graph):
-    assert populated_graph.get_node_attributes('3caaa8c09148493dbdf02c574b95526c') == {"type": "A"}
+    assert ( populated_graph.get_node_attributes('3caaa8c09148493dbdf02c574b95526c') == 
+        {
+            "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            'type': 'A'
+        }
+    )
     with pytest.raises(sn.GraphException):
         populated_graph.get_node_attributes('3caaa8c09148493dbdf02c57deadbeef')
 
