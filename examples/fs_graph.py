@@ -3,7 +3,7 @@
 import sys
 import os
 import argparse
-import semanticnet.SemanticNet as sn
+import semanticnet as sn
 
 if __name__ == "__main__":
     if len(sys.argv) < 1:

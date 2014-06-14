@@ -31,3 +31,16 @@ and restart your shell.
 cd /path/to/your/python/modules
 git clone https://github.com/ThibaultReuille/semantic-net.git semanticnet
 ```
+
+#### Tests
+If you wish to run the test suite, it uses `py.test`. Install it with:
+
+```sh
+pip install pytest
+```
+
+and run the tests with:
+
+```sh
+py.test -v ./test/test_semanticnet.py
+```
