@@ -25,6 +25,8 @@ class Graph(object):
     def __init__(self, verbose=False):
         self._g = nx.MultiGraph()
         self._edges = {}
+        self._cache = {}
+        
         self.meta = {}
         self.timeline = []
 
@@ -51,6 +53,19 @@ class Graph(object):
             pass
 
         return id_
+
+    def _cache_node(self, attr, node):
+        # if we have not cached anything by this attr before,
+        # create an empty dict for it
+        if attr not in self._cache:
+            self._cache[attr] = {}
+
+        # if we haven't seen this attr value before, make an empty list for it
+        if node[attr] not in self._cache[attr]:
+            self._cache[attr][node[attr]] = []
+
+        # add it to the cache
+        self._cache[attr][node[attr]].append(node)
 
     def log(self, line):
         '''Print the message line to standard output.'''
@@ -221,6 +236,52 @@ class Graph(object):
 
     def add_event(self, timecode, name, attributes):
         self.timeline.append(Event(timecode, name, attributes))
+
+    def cache_nodes_by(self, attr):
+        '''Tells SemanticNet to cache nodes by the given attribute attr.
+
+        After a call to this method, nodes will be accessible by calls to the method get_node_by_attr().
+        See the docs for that function for more detail.
+        '''
+        for node in [ self._g.node[i] for i in self._g.nodes() ]:
+            if attr in node:
+                self._cache_node(attr, node)
+
+    def get_nodes_by_attr(self, attr, val=None, nosingleton=True):
+        '''Gets all nodes with the given attribute attr and value val.
+
+        If val is not specified, returns a dict of all nodes, keyed by attr.
+
+        By default, if there is only one node with the given attr and val, the method only
+        returns that node (rather than a singleton list). This is useful, for instance, if
+        the user knows all attributes of a certain type will be unique, and wishes to simply
+        use attr as the node key. Optionally, the user may specify the 'nosingleton' parameter
+        to be False to return the singleton list.
+
+        If there are no nodes with the given attr or val, returns an empty dict {}.
+        '''
+        nodes = self._cache.get(attr)
+
+        # if the attribute doesn't exist, return an empty dict
+        if nodes == None:
+            return {}
+
+        # if no value was specified for the attribute, return the whole dict
+        # of nodes keyed by attr
+        if val == None:
+            return nodes
+
+        # if there are no nodes with the given attribute and value, return an empty dict
+        if val not in nodes:
+            return {}
+
+        # if user set nosingleton to true, and there is only a single node with this value,
+        # just return the node, rather than a singleton list
+        if nosingleton and len(nodes[val]) == 1:
+            return nodes[val][0]
+
+        # otherwise, return all nodes with the attribute attr and the value val
+        return nodes[val]
 
     def save_json(self, filename):
         '''Exports the graph to a JSON file for use in the Gaia visualizer.'''

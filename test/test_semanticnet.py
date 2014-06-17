@@ -406,3 +406,124 @@ def test_networkx_graph(populated_graph):
 
     # but that it is not the same object
     assert nx_graph is not populated_graph._g
+
+def test_cache_by(populated_graph):
+    # add another node with the same type to make sure it works for multiple nodes
+    # with the same attribute
+    populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
+
+    # cache by the attribute "type"
+    populated_graph.cache_nodes_by("type")
+
+    in_cache = populated_graph._cache
+    out_cache = {
+        "type": {
+            "B": [{
+                "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                'type': 'B'
+            }],
+            "A": [
+                {
+                    "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                    "type": "A"
+                },
+                {
+                    "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+                    "type": "A"
+                }
+            ],
+            "C": [{
+                "id": uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+                'type': 'C'
+            }]
+        }
+    }
+
+    assert in_cache == out_cache
+
+def test_get_nodes_by_attr(populated_graph):
+    populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
+
+    # a non-existent attr should return an empty dict
+    assert populated_graph.get_nodes_by_attr("label") == {}
+
+    # cache by the attribute "type"
+    populated_graph.cache_nodes_by("type")
+
+    ### get all nodes with attr "type"
+    input_ = populated_graph.get_nodes_by_attr("type")
+    output = {
+        "B": [{
+            "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+            'type': 'B'
+        }],
+        "A": [
+            {
+                "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                "type": "A"
+            },
+            {
+                "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+                "type": "A"
+            }
+        ],
+        "C": [{
+            "id": uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+            'type': 'C'
+        }]
+    }
+
+    assert input_ == output
+
+    ### get all nodes of "type" "B"
+    input_ = populated_graph.get_nodes_by_attr("type", "B")
+    output = {
+        "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+        'type': 'B'
+    }
+
+    assert input_ == output
+
+    ### if user specifies 'nosingleton=False', return a singleton list
+    input_ = populated_graph.get_nodes_by_attr("type", "B", nosingleton=False)
+    output = [{
+        "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+        'type': 'B'
+    }]
+
+    assert input_ == output
+
+    ### get all nodes of "type" "A"
+    input_ = populated_graph.get_nodes_by_attr("type", "A")
+    output = [
+        {
+            "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            "type": "A"
+        },
+        {
+            "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+            "type": "A"
+        }
+    ]
+
+    assert input_ == output
+
+    ### if user specifies 'nosingleton=False', but there is more than one,
+    ### should still return the same list, having no affect on the output
+    input_ = populated_graph.get_nodes_by_attr("type", "A", nosingleton=False)
+    output = [
+        {
+            "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            "type": "A"
+        },
+        {
+            "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+            "type": "A"
+        }
+    ]
+
+    assert input_ == output
+
+    ### if the attr is in the cache, but the value is not, return {}
+    assert populated_graph.get_nodes_by_attr("type", "D") == {}
+
