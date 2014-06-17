@@ -55,6 +55,7 @@ class Graph(object):
         return id_
 
     def _cache_node(self, attr, node):
+        '''Cache a node in self._cache'''
         # if we have not cached anything by this attr before,
         # create an empty dict for it
         if attr not in self._cache:
@@ -66,6 +67,14 @@ class Graph(object):
 
         # add it to the cache
         self._cache[attr][node[attr]].append(node)
+
+    def _cache_new_node(self, attrs):
+        '''Checks a new node's attributes and caches it if we are caching by one or more
+        of its attributes.
+        '''
+        for key in self._cache:
+            if key in attrs:
+                self._cache_node(key, attrs)
 
     def log(self, line):
         '''Print the message line to standard output.'''
@@ -89,6 +98,7 @@ class Graph(object):
         data['id'] = id_ # add the ID to the attributes
         self.log("add_node " + str(data) + " = " + str(id_))
         self._g.add_node(id_, data)
+        self._cache_new_node(data)
         return id_
 
     def remove_node(self, id_):
