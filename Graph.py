@@ -234,8 +234,8 @@ class Graph:
                 self.add_edge(
                     src,
                     dst,
-                    dict(item for item in edge.items()
-                        if (item[0] != "src" and item[0] != "dst" and item[0] != "id") ),
+                    dict([item for item in edge.items()
+                            if (item[0] != "src" and item[0] != "dst" and item[0] != "id")] ),
                     id_
                 )
                 self._g.edge[src][dst][id_]["id"] = id_

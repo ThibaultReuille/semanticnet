@@ -1,1 +1,1 @@
-from SemanticNet import *
+from Graph import *
