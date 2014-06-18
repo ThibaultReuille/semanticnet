@@ -78,7 +78,8 @@ To build a graph out of a portion of your file system, run the example script `f
 ```
 
 This will build a tree out of your `~/src/python` folder save the file `fs.json` in your working directory.
-(Obviously, you can change the folder to any you would like to visualize). Then, to run the visualizer with this data:
+(Obviously, you can change the argument path to any you would like to visualize).
+Then, to run the visualizer with this data:
 
 ```sh
 cd gaia
