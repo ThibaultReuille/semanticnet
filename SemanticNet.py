@@ -22,7 +22,7 @@ class Graph:
     '''A simple Graph structure which lets you focus on the data.'''
 
     def __init__(self, verbose=False):
-        self._g = nx.MultiDiGraph()
+        self._g = nx.MultiGraph()
         self._edges = {}
         self.meta = {}
         self.timeline = []
