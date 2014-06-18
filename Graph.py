@@ -76,6 +76,16 @@ class Graph(object):
             if key in attrs:
                 self._cache_node(key, attrs)
 
+    def _remove_node_from_cache(self, id_):
+        '''Removes node id_ from all places it occurs in the cache, if anywhere.'''
+        node = self._g.node[id_]
+        for attr, val in node.iteritems():
+            try:
+                self._cache[attr][val].remove(node)
+            except KeyError:
+                pass
+
+
     def log(self, line):
         '''Print the message line to standard output.'''
         if self.verbose:
@@ -105,12 +115,14 @@ class Graph(object):
         '''Removes node id_.'''
         id_ = self._extract_id(id_)
         if self._g.has_node(id_):
+            # remove all edges incident on this node
             for neighbor in self._g.neighbors(id_):
                 # need to iterate over items() (which copies the dict) because we are
                 # removing items from the edges dict as we are iterating over it
                 for edge in self._g.edge[id_][neighbor].items():
                     # edge[0] is the edge's ID
                     self.remove_edge(self._g.edge[id_][neighbor][edge[0]]["id"])
+            self._remove_node_from_cache(id_)
             self._g.remove_node(id_)
         else:
             raise GraphException("Node ID not found.")

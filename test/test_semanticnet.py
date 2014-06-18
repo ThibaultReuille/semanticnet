@@ -413,6 +413,19 @@ def test_remove_digraph_node(populated_digraph):
     assert edge_a_c_id not in edges
     assert edge_b_c_id in edges
 
+def test_remove_node_with_cache(populated_graph):
+    populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
+    populated_graph.cache_nodes_by("type")
+    populated_graph.remove_node('3caaa8c09148493dbdf02c574b95526c')
+
+    input_ = populated_graph.get_nodes_by_attr("type", "A")
+    output = {
+        "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+        "type": "A"
+    }
+
+    assert input_ == output
+
 def test_save_json(test_output, correct_output):
     assert test_output["timeline"] == correct_output["timeline"]
     assert test_output["meta"] == correct_output["meta"]
