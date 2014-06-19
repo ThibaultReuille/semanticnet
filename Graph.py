@@ -1,6 +1,7 @@
 import networkx as nx
 import json
 import uuid
+import copy
 from itertools import chain
 
 class GraphException(Exception):
@@ -235,6 +236,9 @@ class Graph:
                     id_
                 )
                 self._g.edge[src][dst][id_]["id"] = id_
+
+    def networkx_graph(self):
+        return copy.deepcopy(self._g)
 
 if __name__ == "__main__":
     print("Please import this module !")

@@ -356,3 +356,17 @@ def test_load_json(correct_output_graph):
     }
 
     assert correct_output_graph.get_edges() == edges
+
+def test_networkx_graph(populated_graph):
+    nx_graph = populated_graph.networkx_graph()
+
+    # make sure all edges and nodes are the same
+    for id_, attr in populated_graph.get_edges().iteritems():
+        assert nx_graph.edge[attr["src"]][attr["dst"]][id_] == attr
+
+    for id_, attr in populated_graph.get_nodes().iteritems():
+        assert nx_graph.node[id_] == attr
+
+
+    # but that it is not the same object
+    assert nx_graph is not populated_graph._g
