@@ -230,6 +230,18 @@ def test_set_node_attribute(populated_graph):
         populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'id',
             '3caaa8c09148493dbdf02c57deadbeef')
 
+def test_set_node_attribute_with_cache(populated_graph):
+    populated_graph.cache_nodes_by("type")
+    populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'type', 'B')
+
+    a_nodes = populated_graph.get_nodes_by_attr("type", "A", nosingleton=False)
+    b_nodes = populated_graph.get_nodes_by_attr("type", "B", nosingleton=False)
+
+    node_a = populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c')
+
+    assert node_a not in a_nodes
+    assert node_a in b_nodes
+
 def test_add_edge(graph):
     a = graph.add_node({"type": "A"})
     b = graph.add_node({"type": "B"})

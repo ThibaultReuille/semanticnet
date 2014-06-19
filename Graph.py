@@ -85,6 +85,8 @@ class Graph(object):
             except KeyError:
                 pass
 
+    def _update_node_cache(self, node, attr):
+        pass
 
     def log(self, line):
         '''Print the message line to standard output.'''
