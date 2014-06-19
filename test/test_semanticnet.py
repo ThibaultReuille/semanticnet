@@ -1,8 +1,9 @@
 import pytest
-import semanticnet.SemanticNet as sn
+import semanticnet as sn
 import uuid
 import os
 import time
+import json
 
 ### FIXTURES ###
 @pytest.fixture
@@ -42,17 +43,17 @@ def test_output():
 
     graph.save_json("test_output.json")
 
-    f_str = ""
     with open("test_output.json") as f:
-        f_str = f.read()
-    return f_str
+        jsonObj = json.load(f)
+
+    return jsonObj
 
 @pytest.fixture
 def correct_output():
-    f_str = ""
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json")) as f:
-        f_str = f.read()
-    return f_str
+        jsonObj = json.load(f)
+
+    return jsonObj
 
 @pytest.fixture
 def correct_output_graph():
@@ -272,7 +273,20 @@ def test_remove_node(populated_graph):
         populated_graph.remove_node('3caaa8c09148493dbdf02c57deadbeef')
 
 def test_save_json(test_output, correct_output):
-    assert test_output == correct_output
+    assert test_output["timeline"] == correct_output["timeline"]
+    assert test_output["meta"] == correct_output["meta"]
+
+    for node in test_output["nodes"]:
+        assert node in correct_output["nodes"]
+
+    for edge in test_output["edges"]:
+        # for an undirected edge, reversing src and dst is valid
+        try:
+            assert edge in correct_output["edges"]
+        except AssertionError:
+            edge["src"], edge["dst"] = edge["dst"], edge["src"]
+            assert edge in correct_output["edges"]
+
     os.remove("test_output.json")
 
 def test_load_json(correct_output_graph):
@@ -286,8 +300,8 @@ def test_load_json(correct_output_graph):
 
     edges = {
         uuid.UUID('081369f6197b467abe97b3efe8cc4640'): {
-            'src': uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'),
-            'dst': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
+            'src': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
+            'dst': uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'),
             'type': 'owns',
             'id': uuid.UUID('081369f6197b467abe97b3efe8cc4640')
         },
@@ -298,8 +312,8 @@ def test_load_json(correct_output_graph):
             'id': uuid.UUID('b3a245098d5d482f893c6d63606c7e91')
         },
         uuid.UUID('ff8a8a8093cf436aa3b0127c71ddc11d'): {
-            'src': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
-            'dst': uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'),
+            'src': uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'),
+            'dst': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
             'type': 'belongs',
             'id': uuid.UUID('ff8a8a8093cf436aa3b0127c71ddc11d')
         }

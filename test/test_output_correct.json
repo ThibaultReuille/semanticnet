@@ -17,21 +17,21 @@
  "meta": {}, 
  "edges": [
   {
-   "src": "d6523f4f9d5240d2a92e341f4ca00a78", 
-   "dst": "bcb388bb24a74d978fa2006ed278b2fe", 
-   "type": "owns", 
-   "id": "081369f6197b467abe97b3efe8cc4640"
-  }, 
-  {
-   "src": "d6523f4f9d5240d2a92e341f4ca00a78", 
-   "dst": "6cf546f71efe47578f7a1400871ef6b8", 
-   "type": "has", 
+   "src": "d6523f4f9d5240d2a92e341f4ca00a78",
+   "dst": "6cf546f71efe47578f7a1400871ef6b8",
+   "type": "has",
    "id": "b3a245098d5d482f893c6d63606c7e91"
   }, 
   {
-   "src": "bcb388bb24a74d978fa2006ed278b2fe", 
-   "dst": "6cf546f71efe47578f7a1400871ef6b8", 
-   "type": "belongs", 
+   "src": "bcb388bb24a74d978fa2006ed278b2fe",
+   "dst": "d6523f4f9d5240d2a92e341f4ca00a78",
+   "type": "owns",
+   "id": "081369f6197b467abe97b3efe8cc4640"
+  }, 
+  {
+   "src": "6cf546f71efe47578f7a1400871ef6b8",
+   "dst": "bcb388bb24a74d978fa2006ed278b2fe",
+   "type": "belongs",
    "id": "ff8a8a8093cf436aa3b0127c71ddc11d"
   }
  ]
