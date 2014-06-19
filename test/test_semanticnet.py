@@ -169,6 +169,15 @@ def test_add_node_with_cache(populated_graph):
 
     assert input_ == output
 
+def test_get_node(populated_graph):
+    assert (
+        populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c') ==
+        {
+            "type": "A",
+            "id": uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
+        }
+    )
+
 def test_get_nodes(populated_graph):
     output = {
         uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'): {
