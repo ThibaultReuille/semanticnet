@@ -143,7 +143,7 @@ def test_add_node_with_cache(populated_graph):
     # add a new node with an attribute that we are not caching.
     # Should NOT be in the cache
     populated_graph.add_node({"label": "test"}, 'fa02d5e82ed54baf828558c70317f20e')
-    input_ = populated_graph._cache
+    input_ = populated_graph._node_cache
     output = {
         "type": {
             "A": [
@@ -497,7 +497,7 @@ def test_cache_by(populated_graph):
     # cache by the attribute "type"
     populated_graph.cache_nodes_by("type")
 
-    in_cache = populated_graph._cache
+    in_cache = populated_graph._node_cache
     out_cache = {
         "type": {
             "B": [{

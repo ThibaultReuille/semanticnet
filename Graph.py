@@ -25,7 +25,7 @@ class Graph(object):
     def __init__(self, verbose=False):
         self._g = nx.MultiGraph()
         self._edges = {}
-        self._cache = {}
+        self._node_cache = {}
         
         self.meta = {}
         self.timeline = []
@@ -55,24 +55,24 @@ class Graph(object):
         return id_
 
     def _cache_node(self, attr, node):
-        '''Cache a node in self._cache'''
+        '''Cache a node in self._node_cache'''
         # if we have not cached anything by this attr before,
         # create an empty dict for it
-        if attr not in self._cache:
-            self._cache[attr] = {}
+        if attr not in self._node_cache:
+            self._node_cache[attr] = {}
 
         # if we haven't seen this attr value before, make an empty list for it
-        if node[attr] not in self._cache[attr]:
-            self._cache[attr][node[attr]] = []
+        if node[attr] not in self._node_cache[attr]:
+            self._node_cache[attr][node[attr]] = []
 
         # add it to the cache
-        self._cache[attr][node[attr]].append(node)
+        self._node_cache[attr][node[attr]].append(node)
 
     def _cache_new_node(self, attrs):
         '''Checks a new node's attributes and caches it if we are caching by one or more
         of its attributes.
         '''
-        for key in self._cache:
+        for key in self._node_cache:
             if key in attrs:
                 self._cache_node(key, attrs)
 
@@ -81,7 +81,7 @@ class Graph(object):
         node = self._g.node[id_]
         for attr, val in node.iteritems():
             try:
-                self._cache[attr][val].remove(node)
+                self._node_cache[attr][val].remove(node)
             except KeyError:
                 pass
 
@@ -282,7 +282,7 @@ class Graph(object):
 
         If there are no nodes with the given attr or val, returns an empty dict {}.
         '''
-        nodes = self._cache.get(attr)
+        nodes = self._node_cache.get(attr)
 
         # if the attribute doesn't exist, return an empty dict
         if nodes == None:
