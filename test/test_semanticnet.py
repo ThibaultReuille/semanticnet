@@ -30,6 +30,18 @@ def populated_graph():
     return g
 
 @pytest.fixture
+def populated_digraph():
+    g = sn.DiGraph()
+    a = g.add_node({"type": "A"}, '3caaa8c09148493dbdf02c574b95526c')
+    b = g.add_node({"type": "B"}, '2cdfebf3bf9547f19f0412ccdfbe03b7')
+    c = g.add_node({"type": "C"}, '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+    g.add_edge(a, b, {"type": "normal"}, '5f5f44ec7c0144e29c5b7d513f92d9ab')
+    g.add_edge(b, a, {"type": "normal"}, 'f3674fcc691848ebbd478b1bfb3e84c3')
+    g.add_edge(a, c, {"type": "normal"}, '7eb91be54d3746b89a61a282bcc207bb')
+    g.add_edge(b, c, {"type": "irregular"}, 'c172a3599b7d4ef3bbb688277276b763')
+    return g
+
+@pytest.fixture
 def test_output():
     graph = sn.Graph()
 
@@ -271,6 +283,30 @@ def test_remove_node(populated_graph):
 
     with pytest.raises(sn.GraphException):
         populated_graph.remove_node('3caaa8c09148493dbdf02c57deadbeef')
+
+def test_remove_digraph_node(populated_digraph):
+    node_a_id = uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
+    node_b_id = uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7')
+    node_c_id = uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+
+    edge_a_b_id = uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab')
+    edge_b_a_id = uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3')
+    edge_a_c_id = uuid.UUID('7eb91be54d3746b89a61a282bcc207bb')
+    edge_b_c_id = uuid.UUID('c172a3599b7d4ef3bbb688277276b763')
+
+    populated_digraph.remove_node('3caaa8c09148493dbdf02c574b95526c')
+
+    # make sure a is gone, and b and c are not
+    assert node_a_id not in populated_digraph.get_nodes()
+    assert node_b_id in populated_digraph.get_nodes()
+    assert node_c_id in populated_digraph.get_nodes()
+
+    # make sure edges (a,b), (b,a), (a,c) are gone but (b,c) is not
+    edges = populated_digraph.get_edges()
+    assert edge_a_b_id not in edges
+    assert edge_b_a_id not in edges
+    assert edge_a_c_id not in edges
+    assert edge_b_c_id in edges
 
 def test_save_json(test_output, correct_output):
     assert test_output["timeline"] == correct_output["timeline"]
