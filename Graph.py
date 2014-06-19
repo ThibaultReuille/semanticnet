@@ -203,12 +203,8 @@ class Graph:
             graph["edges"] = [
                 dict(
                     chain(
-                        { "src": i.hex, "dst": j.hex, "id": key.hex}.items(),
-                        [ item for item in self._g.edge[i][j][key].items()
-                            if  item[0] != 'id' and
-                                item[0] != 'src' and
-                                item[0] != 'dst'
-                        ]
+                        self._g.edge[i][j][key].items(),
+                        { "src": i.hex, "dst": j.hex, "id": key.hex}.items()
                     )
                 )
                 for i, j in self._g.edges()
