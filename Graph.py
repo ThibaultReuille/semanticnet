@@ -13,13 +13,13 @@ class GraphException(Exception):
     def __str__(self):
         return repr(self.msg)
 
-class Event:
+class Event(object):
     def __init__(self, timecode, name, attributes):
         self.timecode = timecode
         self.name = name
         self.attributes = attributes
 
-class Graph:
+class Graph(object):
     '''A simple Graph structure which lets you focus on the data.'''
 
     def __init__(self, verbose=False):

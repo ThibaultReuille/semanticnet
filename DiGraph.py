@@ -4,13 +4,8 @@ from semanticnet import Graph
 class DiGraph(Graph):
 
     def __init__(self, verbose=False):
+        super(DiGraph, self).__init__()
         self._g = nx.MultiDiGraph()
-        self._edges = {}
-        self.meta = {}
-        self.timeline = []
-
-        self.verbose = verbose
-        self.attr_reserved = ["id", "src", "dst"]
 
     def remove_node(self, id_):
         '''Removes node id_.'''
