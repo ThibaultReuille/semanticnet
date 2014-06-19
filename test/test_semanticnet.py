@@ -203,6 +203,15 @@ def test_get_edges(populated_graph):
     }
     assert populated_graph.get_edges() == output
 
+def test_get_node(populated_graph):
+    assert (
+        populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c') ==
+        {
+            "type": "A",
+            "id": uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
+        }
+    )
+
 def test_get_edge_attribute(populated_graph):
     assert populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'type') == 'normal'
 

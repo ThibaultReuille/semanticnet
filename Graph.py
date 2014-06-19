@@ -134,6 +134,10 @@ class Graph(object):
         '''Returns a list of all nodes in the graph.'''
         return dict([ (id_, self._g.node[id_]) for id_ in self._g.nodes() ])
 
+    def get_node(self, id_):
+        id_ = self._extract_uuid(id_)
+        return self._g.node[id_]
+
     def get_node_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name of node id_.'''
         id_ = self._extract_uuid(id_)
