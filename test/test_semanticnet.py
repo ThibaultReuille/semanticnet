@@ -1,8 +1,9 @@
 import pytest
-import semanticnet.SemanticNet as sn
+import semanticnet as sn
 import uuid
 import os
 import time
+import json
 
 ### FIXTURES ###
 @pytest.fixture
@@ -29,6 +30,18 @@ def populated_graph():
     return g
 
 @pytest.fixture
+def populated_digraph():
+    g = sn.DiGraph()
+    a = g.add_node({"type": "A"}, '3caaa8c09148493dbdf02c574b95526c')
+    b = g.add_node({"type": "B"}, '2cdfebf3bf9547f19f0412ccdfbe03b7')
+    c = g.add_node({"type": "C"}, '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+    g.add_edge(a, b, {"type": "normal"}, '5f5f44ec7c0144e29c5b7d513f92d9ab')
+    g.add_edge(b, a, {"type": "normal"}, 'f3674fcc691848ebbd478b1bfb3e84c3')
+    g.add_edge(a, c, {"type": "normal"}, '7eb91be54d3746b89a61a282bcc207bb')
+    g.add_edge(b, c, {"type": "irregular"}, 'c172a3599b7d4ef3bbb688277276b763')
+    return g
+
+@pytest.fixture
 def test_output():
     graph = sn.Graph()
 
@@ -42,17 +55,17 @@ def test_output():
 
     graph.save_json("test_output.json")
 
-    f_str = ""
     with open("test_output.json") as f:
-        f_str = f.read()
-    return f_str
+        jsonObj = json.load(f)
+
+    return jsonObj
 
 @pytest.fixture
 def correct_output():
-    f_str = ""
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json")) as f:
-        f_str = f.read()
-    return f_str
+        jsonObj = json.load(f)
+
+    return jsonObj
 
 @pytest.fixture
 def correct_output_graph():
@@ -190,6 +203,15 @@ def test_get_edges(populated_graph):
     }
     assert populated_graph.get_edges() == output
 
+def test_get_node(populated_graph):
+    assert (
+        populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c') ==
+        {
+            "type": "A",
+            "id": uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
+        }
+    )
+
 def test_get_edge_attribute(populated_graph):
     assert populated_graph.get_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'type') == 'normal'
 
@@ -271,8 +293,45 @@ def test_remove_node(populated_graph):
     with pytest.raises(sn.GraphException):
         populated_graph.remove_node('3caaa8c09148493dbdf02c57deadbeef')
 
+def test_remove_digraph_node(populated_digraph):
+    node_a_id = uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
+    node_b_id = uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7')
+    node_c_id = uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+
+    edge_a_b_id = uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab')
+    edge_b_a_id = uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3')
+    edge_a_c_id = uuid.UUID('7eb91be54d3746b89a61a282bcc207bb')
+    edge_b_c_id = uuid.UUID('c172a3599b7d4ef3bbb688277276b763')
+
+    populated_digraph.remove_node('3caaa8c09148493dbdf02c574b95526c')
+
+    # make sure a is gone, and b and c are not
+    assert node_a_id not in populated_digraph.get_nodes()
+    assert node_b_id in populated_digraph.get_nodes()
+    assert node_c_id in populated_digraph.get_nodes()
+
+    # make sure edges (a,b), (b,a), (a,c) are gone but (b,c) is not
+    edges = populated_digraph.get_edges()
+    assert edge_a_b_id not in edges
+    assert edge_b_a_id not in edges
+    assert edge_a_c_id not in edges
+    assert edge_b_c_id in edges
+
 def test_save_json(test_output, correct_output):
-    assert test_output == correct_output
+    assert test_output["timeline"] == correct_output["timeline"]
+    assert test_output["meta"] == correct_output["meta"]
+
+    for node in test_output["nodes"]:
+        assert node in correct_output["nodes"]
+
+    for edge in test_output["edges"]:
+        # for an undirected edge, reversing src and dst is valid
+        try:
+            assert edge in correct_output["edges"]
+        except AssertionError:
+            edge["src"], edge["dst"] = edge["dst"], edge["src"]
+            assert edge in correct_output["edges"]
+
     os.remove("test_output.json")
 
 def test_load_json(correct_output_graph):
@@ -286,8 +345,8 @@ def test_load_json(correct_output_graph):
 
     edges = {
         uuid.UUID('081369f6197b467abe97b3efe8cc4640'): {
-            'src': uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'),
-            'dst': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
+            'src': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
+            'dst': uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'),
             'type': 'owns',
             'id': uuid.UUID('081369f6197b467abe97b3efe8cc4640')
         },
@@ -298,11 +357,25 @@ def test_load_json(correct_output_graph):
             'id': uuid.UUID('b3a245098d5d482f893c6d63606c7e91')
         },
         uuid.UUID('ff8a8a8093cf436aa3b0127c71ddc11d'): {
-            'src': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
-            'dst': uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'),
+            'src': uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'),
+            'dst': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
             'type': 'belongs',
             'id': uuid.UUID('ff8a8a8093cf436aa3b0127c71ddc11d')
         }
     }
 
     assert correct_output_graph.get_edges() == edges
+
+def test_networkx_graph(populated_graph):
+    nx_graph = populated_graph.networkx_graph()
+
+    # make sure all edges and nodes are the same
+    for id_, attr in populated_graph.get_edges().iteritems():
+        assert nx_graph.edge[attr["src"]][attr["dst"]][id_] == attr
+
+    for id_, attr in populated_graph.get_nodes().iteritems():
+        assert nx_graph.node[id_] == attr
+
+
+    # but that it is not the same object
+    assert nx_graph is not populated_graph._g

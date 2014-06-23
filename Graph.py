@@ -1,6 +1,7 @@
 import networkx as nx
 import json
 import uuid
+import copy
 from itertools import chain
 
 class GraphException(Exception):
@@ -12,17 +13,17 @@ class GraphException(Exception):
     def __str__(self):
         return repr(self.msg)
 
-class Event:
+class Event(object):
     def __init__(self, timecode, name, attributes):
         self.timecode = timecode
         self.name = name
         self.attributes = attributes
 
-class Graph:
+class Graph(object):
     '''A simple Graph structure which lets you focus on the data.'''
 
     def __init__(self, verbose=False):
-        self._g = nx.MultiDiGraph()
+        self._g = nx.MultiGraph()
         self._edges = {}
         self.meta = {}
         self.timeline = []
@@ -133,6 +134,10 @@ class Graph:
         '''Returns a list of all nodes in the graph.'''
         return dict([ (id_, self._g.node[id_]) for id_ in self._g.nodes() ])
 
+    def get_node(self, id_):
+        id_ = self._extract_uuid(id_)
+        return self._g.node[id_]
+
     def get_node_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name of node id_.'''
         id_ = self._extract_uuid(id_)
@@ -203,12 +208,8 @@ class Graph:
             graph["edges"] = [
                 dict(
                     chain(
-                        { "src": i.hex, "dst": j.hex, "id": key.hex}.items(),
-                        [ item for item in self._g.edge[i][j][key].items()
-                            if  item[0] != 'id' and
-                                item[0] != 'src' and
-                                item[0] != 'dst'
-                        ]
+                        self._g.edge[i][j][key].items(),
+                        { "src": i.hex, "dst": j.hex, "id": key.hex}.items()
                     )
                 )
                 for i, j in self._g.edges()
@@ -234,11 +235,14 @@ class Graph:
                 self.add_edge(
                     src,
                     dst,
-                    dict(item for item in edge.items()
-                        if (item[0] != "src" and item[0] != "dst" and item[0] != "id") ),
+                    dict([item for item in edge.items()
+                            if (item[0] != "src" and item[0] != "dst" and item[0] != "id")] ),
                     id_
                 )
                 self._g.edge[src][dst][id_]["id"] = id_
+
+    def networkx_graph(self):
+        return copy.deepcopy(self._g)
 
 if __name__ == "__main__":
     print("Please import this module !")
