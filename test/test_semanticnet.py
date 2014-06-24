@@ -180,6 +180,27 @@ def test_get_edge(populated_graph):
     with pytest.raises(sn.GraphException):
         populated_graph.get_edge('7eb91be5-4d37-46b8-9a61-a282deadbeef')
 
+def test_get_edges_between(populated_graph):
+    populated_graph.add_edge('3caaa8c09148493dbdf02c574b95526c', '2cdfebf3bf9547f19f0412ccdfbe03b7',
+        {"type": "irregular"}, '9ad0b719d681459584f7e2c962910526')
+
+    edges_a_b = populated_graph.get_edges_between('3caaa8c09148493dbdf02c574b95526c', '2cdfebf3bf9547f19f0412ccdfbe03b7')
+    correct = {
+        uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab'): {
+            "src": uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            "dst": uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            "type": "normal",
+            "id": uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab')
+        },
+        uuid.UUID('9ad0b719d681459584f7e2c962910526'): {
+            "src": uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            "dst": uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            "type": "irregular",
+            "id": uuid.UUID('9ad0b719d681459584f7e2c962910526')
+        }
+    }
+    assert edges_a_b == correct
+
 def test_get_edges(populated_graph):
     output = {
         uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb'): {

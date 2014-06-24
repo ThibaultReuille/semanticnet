@@ -166,6 +166,14 @@ class Graph(object):
         else:
             raise GraphException('Node ID not found.')
 
+    def get_edges_between(self, src, dst):
+        '''Returns all edges between src and dst'''
+        src = self._extract_uuid(src)
+        dst = self._extract_uuid(dst)
+        if self._g.has_node(src) and self._g.has_node(dst):
+            return self._g.edge[src][dst]
+        return {}
+
     def set_edge_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for edge id_.'''
         id_ = self._extract_uuid(id_)
