@@ -170,7 +170,7 @@ class Graph(object):
         '''Returns all edges between src and dst'''
         src = self._extract_uuid(src)
         dst = self._extract_uuid(dst)
-        if self._g.has_node(src) and self._g.has_node(dst):
+        if self._g.has_node(src) and self._g.has_node(dst) and self._g.has_edge(src, dst):
             return self._g.edge[src][dst]
         return {}
 
