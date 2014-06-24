@@ -1,5 +1,7 @@
 *.pyc
+*.state*
 *.json
 *.DS_Store
 *__pycache__
 *.coverage
+bro/
