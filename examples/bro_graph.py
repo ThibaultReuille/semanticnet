@@ -63,10 +63,11 @@ def extract_data(fields, log, limit=0):
     return data
 
 def print_data(data):
-    for item in data:
-        for key, val in item.items():
-            print("{}: {}".format(key, val))
-        print
+    for ip, ip_data in data.items():
+        for item in ip_data:
+            for key, val in item.items():
+                print("{}: {}".format(key, val))
+            print
 
 def get_node(field, log_entry, label=""):
     global nodes
