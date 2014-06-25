@@ -85,8 +85,24 @@ class Graph(object):
             except KeyError:
                 pass
 
-    def _update_node_cache(self, node, attr):
-        pass
+    def _update_node_cache(self, id_, attr_name):
+        '''Update the cache for the given node with ID id_ and attribute attr_name
+
+        IMPORTANT: Assumes that the attribute has already been set with the new value!
+        '''
+
+        # if we are not caching by this attribute, there is nothing to do
+        if attr_name not in self._node_cache:
+            return
+
+        # remove any nodes that are in the wrong place in the cache
+        for key, nodes in self._node_cache[attr_name].items():
+            for node in nodes:
+                if key not in node:
+                    self._node_cache[attr_name][key].remove(node)
+                    break # should only happen once
+
+        self._cache_node(attr_name, self._g.node[id_])
 
     def log(self, line):
         '''Print the message line to standard output.'''
@@ -181,6 +197,7 @@ class Graph(object):
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
 
             self._g.node[id_][attr_name] = value
+            self._update_node_cache(id_, attr_name)
         else:
             raise GraphException("Node id not found, can't set attribute.")
 
