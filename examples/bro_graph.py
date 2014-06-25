@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import csv
-import sys
-import re
 import os
-import urlparse
-import semanticnet as sn
 import pprint
+import re
+import semanticnet as sn
+import sys
+import urlparse
 
 delim_pattern = '(#separator.+)'
 var_line_pattern = '(\#.+)'
