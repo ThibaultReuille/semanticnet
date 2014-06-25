@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import csv
 import os
 import pprint
@@ -112,11 +113,12 @@ def connect(graph, src, dst, attrs):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Need a capture file")
-        sys.exit(-1)
+    parser = argparse.ArgumentParser("bro_graph")
+    parser.add_argument('capture_filename')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False)
+    args = parser.parse_args()
 
-    logfilename = sys.argv[1]
+    logfilename = args.capture_filename
     print("Opening {}".format(logfilename))
 
     with open(logfilename) as logfile:
@@ -128,7 +130,8 @@ if __name__ == "__main__":
     vars_ = extract_vars(log)
     data = extract_data(vars_['fields'], log, 500)
 
-    # print_data(data)
+    if args.verbose:
+        print_data(data)
 
     graph = sn.DiGraph()
     global nodes
