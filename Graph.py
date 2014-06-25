@@ -271,18 +271,17 @@ class Graph(object):
             if attr in node:
                 self._cache_node(attr, node)
 
-    def get_nodes_by_attr(self, attr, val=None, nosingleton=True):
+    def get_nodes_by_attr(self, attr, val=None, nosingleton=False):
         '''Gets all nodes with the given attribute attr and value val.
 
         If val is not specified, returns a dict of all nodes, keyed by attr.
 
-        By default, if there is only one node with the given attr and val, the method only
-        returns that node (rather than a singleton list). This is useful, for instance, if
-        the user knows all attributes of a certain type will be unique, and wishes to simply
-        use attr as the node key. Optionally, the user may specify the 'nosingleton' parameter
-        to be False to return the singleton list.
+        If there are no nodes with the given attr or val, returns an empty list.
 
-        If there are no nodes with the given attr or val, returns an empty dict {}.
+        Optionally, if the nosingleton parameter is set to True, and there is only one node in a list,
+        the method will only return that single node, rather than a singleton list. This is useful,
+        for instance, if the user knows all nodes with attributes of a certain type will be unique,
+        and wishes to simply use attr as the node key.
         '''
         nodes = self._node_cache.get(attr)
 
@@ -295,9 +294,9 @@ class Graph(object):
         if val == None:
             return nodes
 
-        # if there are no nodes with the given attribute and value, return an empty dict
+        # if there are no nodes with the given attribute and value, return an empty list
         if val not in nodes:
-            return {}
+            return []
 
         # if user set nosingleton to true, and there is only a single node with this value,
         # just return the node, rather than a singleton list

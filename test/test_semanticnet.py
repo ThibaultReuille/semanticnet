@@ -234,8 +234,8 @@ def test_set_node_attribute_with_cache(populated_graph):
     populated_graph.cache_nodes_by("type")
     populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'type', 'B')
 
-    a_nodes = populated_graph.get_nodes_by_attr("type", "A", nosingleton=False)
-    b_nodes = populated_graph.get_nodes_by_attr("type", "B", nosingleton=False)
+    a_nodes = populated_graph.get_nodes_by_attr("type", "A")
+    b_nodes = populated_graph.get_nodes_by_attr("type", "B")
 
     node_a = populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c')
 
@@ -440,10 +440,10 @@ def test_remove_node_with_cache(populated_graph):
     populated_graph.remove_node('3caaa8c09148493dbdf02c574b95526c')
 
     input_ = populated_graph.get_nodes_by_attr("type", "A")
-    output = {
+    output = [{
         "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
         "type": "A"
-    }
+    }]
 
     assert input_ == output
 
@@ -580,19 +580,19 @@ def test_get_nodes_by_attr(populated_graph):
 
     ### get all nodes of "type" "B"
     input_ = populated_graph.get_nodes_by_attr("type", "B")
-    output = {
-        "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
-        'type': 'B'
-    }
-
-    assert input_ == output
-
-    ### if user specifies 'nosingleton=False', return a singleton list
-    input_ = populated_graph.get_nodes_by_attr("type", "B", nosingleton=False)
     output = [{
         "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
         'type': 'B'
     }]
+
+    assert input_ == output
+
+    ### if user specifies 'nosingleton=False', return a singleton list
+    input_ = populated_graph.get_nodes_by_attr("type", "B", nosingleton=True)
+    output = {
+        "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+        'type': 'B'
+    }
 
     assert input_ == output
 
@@ -611,9 +611,9 @@ def test_get_nodes_by_attr(populated_graph):
 
     assert input_ == output
 
-    ### if user specifies 'nosingleton=False', but there is more than one,
+    ### if user specifies 'nosingleton=True', but there is more than one,
     ### should still return the same list, having no affect on the output
-    input_ = populated_graph.get_nodes_by_attr("type", "A", nosingleton=False)
+    input_ = populated_graph.get_nodes_by_attr("type", "A", nosingleton=True)
     output = [
         {
             "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
@@ -627,6 +627,6 @@ def test_get_nodes_by_attr(populated_graph):
 
     assert input_ == output
 
-    ### if the attr is in the cache, but the value is not, return {}
-    assert populated_graph.get_nodes_by_attr("type", "D") == {}
+    ### if the attr is in the cache, but the value is not, return []
+    assert populated_graph.get_nodes_by_attr("type", "D") == []
 
