@@ -32,20 +32,6 @@ def extract_vars(log):
 
     return vars_
 
-# def extract_data(fields, log):
-#     data = []
-#     global var_line_pattern
-#     data_lines_matches = re.subn(var_line_pattern + "\n", '', log)
-
-#     if data_lines_matches == None:
-#         return []
-
-#     data_lines = data_lines_matches[0]
-#     bro_reader = csv.DictReader(data_lines.split("\n"), fieldnames=fields, delimiter=delim)
-#     data = [ row for row in bro_reader ]
-
-#     return data
-
 def extract_data(fields, log, limit=0):
     data = {}
     global var_line_pattern
