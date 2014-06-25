@@ -284,6 +284,14 @@ class Graph(object):
         After a call to this method, nodes will be accessible by calls to the method get_node_by_attr().
         See the docs for that function for more detail.
         '''
+
+        # If we're not already caching by this value, initialize the dict for it.
+        # This is also done in _cache_node(), but this is needed for cases
+        # where the user decides to start caching by an attribute, and they haven't
+        # added any nodes with that attribute yet
+        if attr not in self._node_cache:
+            self._node_cache[attr] = {}
+
         for node in [ self._g.node[i] for i in self._g.nodes() ]:
             if attr in node:
                 self._cache_node(attr, node)

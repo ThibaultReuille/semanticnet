@@ -544,6 +544,18 @@ def test_cache_by(populated_graph):
 
     assert in_cache == out_cache
 
+def test_cache_by_empty(graph):
+    graph.cache_nodes_by("type")
+    graph.add_node({"type": "A"}, '8a09b47f77284348878c745741a326aa')
+    cache = graph.get_nodes_by_attr("type", "A", nosingleton=True)
+    assert (
+        cache ==
+        {
+            "id": uuid.UUID('8a09b47f77284348878c745741a326aa'),
+            "type": "A"
+        }
+    )
+
 def test_get_nodes_by_attr(populated_graph):
     populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
 
