@@ -1,10 +1,7 @@
 #!/usr/bin/python
 
 import sys
-
-SEMANTIC_NET_PATH = "../"
-sys.path.insert(0, SEMANTIC_NET_PATH)
-import SemanticNet as sn
+import semanticnet as sn
 
 graph = sn.Graph()
 
