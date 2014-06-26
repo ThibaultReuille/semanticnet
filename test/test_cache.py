@@ -32,8 +32,17 @@ def test_cache_by(populated_graph):
             }]
         }
     }
-
     assert in_cache == out_cache
+
+def test_cache_by_build_false(populated_graph):
+    populated_graph.cache_nodes_by("type", build=False)
+
+    assert (
+        populated_graph._node_cache ==
+        {
+            "type": {}
+        }
+    )
 
 def test_add_node_with_cache(populated_graph):
     populated_graph.cache_nodes_by("type")
