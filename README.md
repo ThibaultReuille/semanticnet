@@ -70,6 +70,9 @@ which indicate the source and destination vertices, respectively.
 In actuality, the `"id"` fields will be [UUIDs](http://en.wikipedia.org/wiki/Globally_unique_identifier).
 
 ## Examples
+Included in this repo are several example scripts to demonstrate usage of SemanticNet. These are the
+instructions for running them.
+
 ### File system
 To build a graph out of a portion of your file system, run the example script `fs_graph.py`:
 
