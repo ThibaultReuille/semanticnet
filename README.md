@@ -70,6 +70,9 @@ which indicate the source and destination vertices, respectively.
 In actuality, the `"id"` fields will be [UUIDs](http://en.wikipedia.org/wiki/Globally_unique_identifier).
 
 ## Examples
+Included in this repo are several example scripts to demonstrate usage of SemanticNet. These are the
+instructions for running them.
+
 ### File system
 To build a graph out of a portion of your file system, run the example script `fs_graph.py`:
 
@@ -78,12 +81,101 @@ To build a graph out of a portion of your file system, run the example script `f
 ```
 
 This will build a tree out of your `~/src/python` folder save the file `fs.json` in your working directory.
-(Obviously, you can change the argument path to any you would like to visualize).
+(Obviously, you can change the argument path to any you would like to visualize; although, beware that if
+it generates too many nodes, you will run into performance issues during the visualization).
 Then, to run the visualizer with this data:
 
 ```sh
-cd gaia
-./gaia demo ../../semanticnet/fs.json
+cd /path/to/Visualization/graphiti
+./graphiti demo /path/to/semanticnet/fs.json
+```
+
+### Bro Logs
+This example builds a graph from an HTTP Bro log. It makes these connections:
+
+```
++----------+       +---------+                  
+|          |       |         |                  
+|  source  |       |  user   |                  
+|    IP    +------->  agent  +----+   +--------+
+|          |       |         |    |   |        |
++----------+       +---------+    +--->  host  |
+                                  +--->        |
+                   +----------+   |   |        |
+                   |          |   |   +--------+
+                   | referrer +---+             
+                   |          |                 
+                   +----------+                 
+```
+
+One example log is included, which was parsed from a packet capture on http://malware-traffic-analysis.net.
+
+```sh
+$ cd examples
+$ ./bro_graph.py ./http.log
+Opening ./http.log
+Building graph...
+Writing results to ./http.json
+cd /path/to/Visualization/graphiti
+./graphiti demo /path/to/semanticnet/examples/http.json
+```
+
+To build a graph from your own packet capture, you simply run `tcpdump` and parse it with `bro`:
+
+```sh
+$ tcpdump -i <your_network_interface> -w outfile.cap
+tcpdump: listening on <your_network_interface>, link-type EN10MB (Ethernet), capture size 65535 bytes
+^C307 packets captured
+309 packets received by filter
+0 packets dropped by kernel
+
+$ bro -r outfile.cap
+
+$ ./graphiti demo /path/to/generated/http.log
+```
+
+### Shodan
+With this example, you can perform a search on the [Shodan](http://www.shodanhq.com/) API and visualize
+the results. In this example script, these connections are made:
+
+```
++---------+     +-------+            
+|         |     |       |            
+| country +-----+  ASN  |            
+|         |     |       |            
++---------+     +---+---+            
+                    |                
+                    |                
+                    |                
+              +-----+-----+          
+              |           |          
+              |    IP     |          
+              |  Address  |          
+              |           |          
+              +--+-----+--+          
+                 |     |             
+         +-------+     +--------+    
+         |                      |    
+         |                      |    
+     +---+--+               +---+---+
+     |      |               |       |
+     | port |               | title |
+     |      |               |       |
+     +------+               +-------+
+```
+
+To run the script, use your Shodan API key, and provide a search string (the same you would
+type into the search bar on Shodan's web page).
+
+```sh
+$ cd examples
+
+$ ./shodan_graph.py -k <YOUR_API_KEY> -s "your search string"
+Saving results to shodan_your_search_string.json
+
+$ cd /path/to/Visualization/graphiti
+
+$ ./graphiti demo /path/to/semanticnet/examples/shodan_your_search_string.json
 ```
 
 ## Installation

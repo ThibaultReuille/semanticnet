@@ -9,7 +9,7 @@ class DiGraph(Graph):
 
     def remove_node(self, id_):
         '''Removes node id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if self._g.has_node(id_):
             # for DiGraph, remove predecessors AND successors
             for successor in self._g.neighbors(id_):
