@@ -78,12 +78,13 @@ To build a graph out of a portion of your file system, run the example script `f
 ```
 
 This will build a tree out of your `~/src/python` folder save the file `fs.json` in your working directory.
-(Obviously, you can change the argument path to any you would like to visualize).
+(Obviously, you can change the argument path to any you would like to visualize; although, beware that if
+it generates too many nodes, you will run into performance issues during the visualization).
 Then, to run the visualizer with this data:
 
 ```sh
-cd gaia
-./gaia demo ../../semanticnet/fs.json
+cd /path/to/Visualization/graphiti
+./graphiti demo /path/to/semanticnet/fs.json
 ```
 
 ## Installation
