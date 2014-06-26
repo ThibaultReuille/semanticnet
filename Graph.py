@@ -38,12 +38,19 @@ class Graph(object):
             id_ = uuid.uuid4()
         return id_
 
-    def _extract_uuid(self, id_):
+    def _extract_id(self, id_):
         '''Parse a UUID out of the string id_.'''
         if id_.__class__.__name__ == 'UUID':
             return id_
 
-        return uuid.UUID(id_)
+        # convert to a UUID if possible
+        try:
+            id_ = uuid.UUID(id_)
+        # if it's not a UUID, just return what was sent
+        except:
+            pass
+
+        return id_
 
     def log(self, line):
         '''Print the message line to standard output.'''
@@ -52,13 +59,17 @@ class Graph(object):
 
     def add_node(self, data={}, id_=None):
         '''Add a node to the graph, with an optional dict of attributes, data.
-        Although you can specify your own id with id_, it is recommended NOT
-        to do this, to avoid unintentional collisions and/or data loss.
+
+        By default, providing an ID is unnecessary; a random UUID is generated for each node.
+        However, if you wish to key by something else, you can do so with the id_ parameter.
+        If you choose to do this, please note that adding a node with the same ID twice
+        overwrites the node that was previously there, so you must check for the presence
+        of a node with an ID manually, if you wish to avoid this.
         '''
         if id_ == None:
             id_ = self._create_uuid()
         else:
-            id_ = self._extract_uuid(id_)
+            id_ = self._extract_id(id_)
 
         data['id'] = id_ # add the ID to the attributes
         self.log("add_node " + str(data) + " = " + str(id_))
@@ -67,7 +78,7 @@ class Graph(object):
 
     def remove_node(self, id_):
         '''Removes node id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if self._g.has_node(id_):
             for neighbor in self._g.neighbors(id_):
                 # need to iterate over items() (which copies the dict) because we are
@@ -81,16 +92,20 @@ class Graph(object):
 
     def add_edge(self, src, dst, data={}, id_=None):
         '''Add an edge from src to dst, with an optional dict of attributes, data.
-        Although you can specify your own id with id_, it is recommended NOT
-        to do this, to avoid unintentional collisions and/or data loss.
+
+        By default, providing an ID is unnecessary; a random UUID is generated for each edge.
+        However, if you wish to key by something else, you can do so with the id_ parameter.
+        If you choose to do this, please note that adding an edge with the same ID twice
+        overwrites the edge that was previously there, so you must check for the presence
+        of an edge with an ID manually, if you wish to avoid this.
         '''
-        src = self._extract_uuid(src)
-        dst = self._extract_uuid(dst)
+        src = self._extract_id(src)
+        dst = self._extract_id(dst)
 
         if id_ == None:
             id_ = self._create_uuid()
         else:
-            id_ = self._extract_uuid(id_)
+            id_ = self._extract_id(id_)
 
         if self._g.has_node(src) and self._g.has_node(dst):
             self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id_))
@@ -110,7 +125,7 @@ class Graph(object):
 
     def remove_edge(self, id_):
         '''Removes edge id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if id_ in self._edges:
             edge = self._edges[id_]
             self._g.remove_edge(edge["src"], edge["dst"], id_)
@@ -120,7 +135,7 @@ class Graph(object):
 
     def set_node_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for node id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
 
         if self._g.has_node(id_):
             if attr_name in self.attr_reserved:
@@ -135,12 +150,12 @@ class Graph(object):
         return dict([ (id_, self._g.node[id_]) for id_ in self._g.nodes() ])
 
     def get_node(self, id_):
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         return self._g.node[id_]
 
     def get_node_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name of node id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if self._g.has_node(id_):
             return self._g.node[id_][attr_name]
         else:
@@ -148,7 +163,7 @@ class Graph(object):
 
     def get_node_attributes(self, id_):
         '''Returns all attributes of node id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if self._g.has_node(id_):
             return self._g.node[id_]
         else:
@@ -160,7 +175,7 @@ class Graph(object):
 
     def get_edge(self, id_):
         '''Returns edge id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if id_ in self._edges:
             return self._edges[id_]
         else:
@@ -168,15 +183,15 @@ class Graph(object):
 
     def get_edges_between(self, src, dst):
         '''Returns all edges between src and dst'''
-        src = self._extract_uuid(src)
-        dst = self._extract_uuid(dst)
+        src = self._extract_id(src)
+        dst = self._extract_id(dst)
         if self._g.has_node(src) and self._g.has_node(dst) and self._g.has_edge(src, dst):
             return self._g.edge[src][dst]
         return {}
 
     def set_edge_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for edge id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if id_ in self._edges:
             if attr_name in self.attr_reserved:
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
@@ -187,7 +202,7 @@ class Graph(object):
 
     def get_edge_attributes(self, id_):
         '''Returns all attributes for edge id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if id_ in self._edges:
             return self._edges[id_]
         else:
@@ -195,7 +210,7 @@ class Graph(object):
 
     def get_edge_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name for edge id_.'''
-        id_ = self._extract_uuid(id_)
+        id_ = self._extract_id(id_)
         if id_ in self._edges:
             if attr_name in self._edges[id_]:
                 return self._edges[id_][attr_name]

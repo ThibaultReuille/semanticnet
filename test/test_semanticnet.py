@@ -78,8 +78,8 @@ def test__create_uuid(graph):
     id_ = graph._create_uuid()
     assert id_.__class__.__name__ == 'UUID'
 
-def test__extract_uuid(graph, uuid_str, uuid_obj):
-    assert graph._extract_uuid(uuid_str) == uuid_obj
+def test__extract_id(graph, uuid_str, uuid_obj):
+    assert graph._extract_id(uuid_str) == uuid_obj
 
 def test_add_event(graph):
     t = time.time()
