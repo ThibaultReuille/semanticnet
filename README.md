@@ -131,6 +131,50 @@ $ bro -r outfile.cap
 $ ./graphiti demo /path/to/generated/http.log
 ```
 
+### Shodan
+With this example, you can perform a search on the [Shodan](http://www.shodanhq.com/) API and visualize
+the results. In this example script, these connections are made:
+
+```
++---------+     +-------+            
+|         |     |       |            
+| country +-----+  ASN  |            
+|         |     |       |            
++---------+     +---+---+            
+                    |                
+                    |                
+                    |                
+              +-----+-----+          
+              |           |          
+              |    IP     |          
+              |  Address  |          
+              |           |          
+              +--+-----+--+          
+                 |     |             
+         +-------+     +--------+    
+         |                      |    
+         |                      |    
+     +---+--+               +---+---+
+     |      |               |       |
+     | port |               | title |
+     |      |               |       |
+     +------+               +-------+
+```
+
+To run the script, use your Shodan API key, and provide a search string (the same you would
+type into the search bar on Shodan's web page).
+
+```sh
+$ cd examples
+
+$ ./shodan_graph.py -k <YOUR_API_KEY> -s "your search string"
+Saving results to shodan_your_search_string.json
+
+$ cd /path/to/Visualization/graphiti
+
+$ ./graphiti demo /path/to/semanticnet/examples/shodan_your_search_string.json
+```
+
 ## Installation
 
 ### Dedpendencies
