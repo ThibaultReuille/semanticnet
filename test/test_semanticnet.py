@@ -346,40 +346,6 @@ def test_networkx_graph(populated_graph):
     # but that it is not the same object
     assert nx_graph is not populated_graph._g
 
-def test_cache_by(populated_graph):
-    # add another node with the same type to make sure it works for multiple nodes
-    # with the same attribute
-    populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
-
-    # cache by the attribute "type"
-    populated_graph.cache_nodes_by("type")
-
-    in_cache = populated_graph._node_cache
-    out_cache = {
-        "type": {
-            "B": [{
-                "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
-                'type': 'B'
-            }],
-            "A": [
-                {
-                    "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
-                    "type": "A"
-                },
-                {
-                    "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
-                    "type": "A"
-                }
-            ],
-            "C": [{
-                "id": uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
-                'type': 'C'
-            }]
-        }
-    }
-
-    assert in_cache == out_cache
-
 def test_cache_by_empty(graph):
     graph.cache_nodes_by("type")
     graph.add_node({"type": "A"}, '8a09b47f77284348878c745741a326aa')
