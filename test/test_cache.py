@@ -44,6 +44,26 @@ def test_cache_by_build_false(populated_graph):
         }
     )
 
+def test_clear_node_cache(populated_graph):
+    # add a node with a different attribute
+    populated_graph.add_node(
+        {"label": "test"},
+        '13624b67282444cb9e038ccd8038e644'
+    )
+
+    populated_graph.cache_nodes_by("type")
+    populated_graph.cache_nodes_by("label")
+    print("node_cache: {}".format(populated_graph._node_cache))
+    assert populated_graph._node_cache["type"] # cache is not empty
+    assert populated_graph._node_cache["label"] # cache is not empty
+
+    populated_graph.clear_node_cache('type')
+    assert not populated_graph._node_cache["type"] # cache IS empty
+    assert populated_graph._node_cache["label"] # cache is not empty
+
+    populated_graph.clear_node_cache()
+    assert not populated_graph._node_cache # entire cache is gone
+
 def test_add_node_with_cache(populated_graph):
     populated_graph.cache_nodes_by("type")
 

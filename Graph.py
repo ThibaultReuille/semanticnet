@@ -302,6 +302,14 @@ class Graph(object):
             if attr in node:
                 self._cache_node(attr, node)
 
+    def clear_node_cache(self, attr=""):
+        '''Delete the cache. If attr is given, delete the cache for that attribute.'''
+
+        if attr == "":
+            self._node_cache = {}
+        elif attr in self._node_cache:
+            self._node_cache[attr] = {}
+
     def get_nodes_by_attr(self, attr, val=None, nosingleton=False):
         '''Gets all nodes with the given attribute attr and value val.
 
