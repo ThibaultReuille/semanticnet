@@ -87,6 +87,50 @@ cd /path/to/Visualization/graphiti
 ./graphiti demo /path/to/semanticnet/fs.json
 ```
 
+### Bro Logs
+This example builds a graph from an HTTP Bro log. It makes these connections:
+
+```
++----------+       +---------+                  
+|          |       |         |                  
+|  source  |       |  user   |                  
+|    IP    +------->  agent  +----+   +--------+
+|          |       |         |    |   |        |
++----------+       +---------+    +--->  host  |
+                                  +--->        |
+                   +----------+   |   |        |
+                   |          |   |   +--------+
+                   | referrer +---+             
+                   |          |                 
+                   +----------+                 
+```
+
+One example log is included, which was parsed from a packet capture on http://malware-traffic-analysis.net.
+
+```sh
+$ cd examples
+$ ./bro_graph.py ./http.log
+Opening ./http.log
+Building graph...
+Writing results to ./http.json
+cd /path/to/Visualization/graphiti
+./graphiti demo /path/to/semanticnet/examples/http.json
+```
+
+To build a graph from your own packet capture, you simply run `tcpdump` and parse it with `bro`:
+
+```sh
+$ tcpdump -i <your_network_interface> -w outfile.cap
+tcpdump: listening on <your_network_interface>, link-type EN10MB (Ethernet), capture size 65535 bytes
+^C307 packets captured
+309 packets received by filter
+0 packets dropped by kernel
+
+$ bro -r outfile.cap
+
+$ ./graphiti demo /path/to/generated/http.log
+```
+
 ## Installation
 
 ### Dedpendencies
