@@ -216,5 +216,5 @@ pip install pytest
 and run the tests with:
 
 ```sh
-py.test -v ./test/test_semanticnet.py
+py.test -v ./test
 ```
