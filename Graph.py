@@ -278,11 +278,14 @@ class Graph(object):
     def add_event(self, timecode, name, attributes):
         self.timeline.append(Event(timecode, name, attributes))
 
-    def cache_nodes_by(self, attr):
+    def cache_nodes_by(self, attr, build=True):
         '''Tells SemanticNet to cache nodes by the given attribute attr.
 
         After a call to this method, nodes will be accessible by calls to the method get_node_by_attr().
         See the docs for that function for more detail.
+
+        Optinally, if the user wishes to tell SemanticNet to start caching NEW nodes of type attr, but not
+        to build a cache from the existing nodes, they may set the 'build' flag to False.
         '''
 
         # If we're not already caching by this value, initialize the dict for it.
@@ -291,6 +294,9 @@ class Graph(object):
         # added any nodes with that attribute yet
         if attr not in self._node_cache:
             self._node_cache[attr] = {}
+
+        if not build:
+            return
 
         for node in [ self._g.node[i] for i in self._g.nodes() ]:
             if attr in node:
