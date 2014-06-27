@@ -338,7 +338,11 @@ class Graph(object):
         self.timeline.append(Event(timecode, name, attributes))
 
     def _cache_by(self, item_type, attr, build):
-        # If we're not already caching by this value, initialize the dict for it.
+        # If we ARE already caching by this value, do nothing
+        if attr in self._cache_meta[item_type].cache:
+            return
+
+        # If we ARE NOT not already caching by this value, initialize the dict for it.
         # This is also done in _cache_node/edge(), but this is needed for cases
         # where the user decides to start caching by an attribute, and they haven't
         # added any nodes/edges with that attribute yet

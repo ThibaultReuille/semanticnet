@@ -34,6 +34,12 @@ def test_cache_nodes_by(populated_graph):
     }
     assert in_cache == out_cache
 
+    # calling cache_nodes_by() more than once on the same attribute should be ignored
+    populated_graph.cache_nodes_by("type")
+    in_cache = populated_graph._node_cache
+    assert in_cache == out_cache
+
+
 def test_cache_edges_by(populated_graph):
     populated_graph.cache_edges_by("type")
 
