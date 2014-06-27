@@ -132,7 +132,7 @@ if __name__ == "__main__":
     graph = sn.DiGraph()
 
     for ip, items in data.items():
-        graph._node_cache = {}
+        graph.clear_node_cache()
         graph.cache_nodes_by("label", build=False)
         for item in items:
             src_ip_node = get_node(graph, 'id.orig_h', item)
