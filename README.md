@@ -1,12 +1,12 @@
-semantic-net
+semanticnet
 ============
 
-Semantic-Net is a small python library to create semantic graphs in JSON.
+semanticnet is a small python library to create semantic graphs in JSON.
 Those created datasets can then be visualized with the 3D graph engine.
 
 ## JSON representation
 When saving graph objects as JSON, the graph is represented internally as one might expect.
-Suppose you have a graph G = (V,E), where 
+Suppose you have a graph G = (V, E), where
 
 V = {0, 1, 2} and
 E = {(0, 1), (0, 2), (1, 2)}
@@ -180,7 +180,7 @@ $ ./graphiti demo /path/to/semanticnet/examples/shodan_your_search_string.json
 
 ## Installation
 
-### Dedpendencies
+### Dependencies
 The only dependency is networkx
 
 Either do: `pip install networkx`
