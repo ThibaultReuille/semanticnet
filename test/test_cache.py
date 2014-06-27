@@ -1,7 +1,7 @@
 import pytest
 import uuid
 
-def test_cache_by(populated_graph):
+def test_cache_nodes_by(populated_graph):
     # add another node with the same type to make sure it works for multiple nodes
     # with the same attribute
     populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
@@ -33,6 +33,166 @@ def test_cache_by(populated_graph):
         }
     }
     assert in_cache == out_cache
+
+def test_cache_edges_by(populated_graph):
+    populated_graph.cache_edges_by("type")
+
+    assert (
+        populated_graph._edge_cache ==
+        {
+            "type": {
+                "normal": [
+                    {
+                        'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                        'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+                        'type': 'normal',
+                        'id': uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb')
+                    },
+                    {
+                        'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                        'dst': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                        'type': 'normal',
+                        'id': uuid.UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab')
+                    }
+                ],
+                "irregular":[
+                    {
+                        'src': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                        'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+                        'type': 'irregular',
+                        'id': uuid.UUID('c172a359-9b7d-4ef3-bbb6-88277276b763')
+                    }
+                ]
+            }
+        }
+    )
+
+def test_get_edges_by_attr(populated_graph):
+    populated_graph.cache_edges_by("type")
+
+    type_edges = populated_graph.get_edges_by_attr("type")
+    correct_output = {
+        "normal": [
+            {
+                'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+                'type': 'normal',
+                'id': uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb')
+            },
+            {
+                'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                'dst': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                'type': 'normal',
+                'id': uuid.UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab')
+            }
+        ],
+        "irregular":[
+            {
+                'src': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+                'type': 'irregular',
+                'id': uuid.UUID('c172a359-9b7d-4ef3-bbb6-88277276b763')
+            }
+        ]
+    }
+    assert type_edges == correct_output
+
+    normal_edges = populated_graph.get_edges_by_attr("type", "normal")
+    correct_output = [
+        {
+            'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+            'type': 'normal',
+            'id': uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb')
+        },
+        {
+            'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            'dst': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+            'type': 'normal',
+            'id': uuid.UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab')
+        }
+    ]
+    assert normal_edges == correct_output
+
+    irregular_edges = populated_graph.get_edges_by_attr("type", "irregular")
+    correct_output = [
+        {
+            'src': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+            'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+            'type': 'irregular',
+            'id': uuid.UUID('c172a359-9b7d-4ef3-bbb6-88277276b763')
+        }
+    ]
+    assert irregular_edges == correct_output
+
+    # should return a single item, rather than a singleton list
+    irregular_edges = populated_graph.get_edges_by_attr("type", "irregular", nosingleton=True)
+    correct_output = {
+        'src': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+        'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+        'type': 'irregular',
+        'id': uuid.UUID('c172a359-9b7d-4ef3-bbb6-88277276b763')
+    }
+    assert irregular_edges == correct_output
+
+def test_cache_edges_by_build_false(populated_graph):
+    populated_graph.cache_edges_by("type", build=False)
+
+    assert (
+        populated_graph._edge_cache ==
+        {
+            "type": {}
+        }
+    )
+
+def test_add_edge_with_cache(populated_graph):
+    test_cache_edges_by(populated_graph) # builds the cache
+
+    populated_graph.add_edge('3caaa8c09148493dbdf02c574b95526c', '2cdfebf3bf9547f19f0412ccdfbe03b7',
+        {"type": "irregular"}, 'c332692fcce54ea2ae85ece6788f7f05')
+
+    assert (
+        populated_graph._edge_cache ==
+        {
+            "type": {
+                "normal": [
+                    {
+                        'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                        'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+                        'type': 'normal',
+                        'id': uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb')
+                    },
+                    {
+                        'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                        'dst': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                        'type': 'normal',
+                        'id': uuid.UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab')
+                    }
+                ],
+                "irregular":[
+                    {
+                        'src': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                        'dst': uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+                        'type': 'irregular',
+                        'id': uuid.UUID('c172a359-9b7d-4ef3-bbb6-88277276b763')
+                    },
+                    {
+                        'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                        'dst': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                        'type': 'irregular',
+                        'id': uuid.UUID('c332692fcce54ea2ae85ece6788f7f05')
+                    }
+                ]
+            }
+        }
+    )
+
+    # add an edge with an attribute we are not tracking
+    # should NOT be in the cache
+    populated_graph.add_edge('2cdfebf3bf9547f19f0412ccdfbe03b7', '3cd197c2cf5e42dc9ccd0c2adcaf4bc2',
+        {"label": "test"}, 'a0d5f731322e428ca1549296ad1c5f66')
+
+    assert "label" not in populated_graph._edge_cache
 
 def test_cache_by_build_false(populated_graph):
     populated_graph.cache_nodes_by("type", build=False)
@@ -145,6 +305,21 @@ def test_set_node_attribute_with_cache(populated_graph):
     assert node_a not in a_nodes
     assert node_a in b_nodes
 
+def test_set_edge_attribute_with_cache(populated_graph):
+    populated_graph.cache_edges_by("type")
+    populated_graph.set_edge_attribute('7eb91be54d3746b89a61a282bcc207bb',
+        'type', 'irregular')
+
+    normal_edges = populated_graph.get_edges_by_attr("type", "normal")
+    irregular_edges = populated_graph.get_edges_by_attr("type", "irregular")
+
+    edge_a_b = populated_graph.get_edge('5f5f44ec7c0144e29c5b7d513f92d9ab')
+    edge_a_c = populated_graph.get_edge('7eb91be54d3746b89a61a282bcc207bb')
+
+    assert edge_a_b in normal_edges
+    assert edge_a_c not in normal_edges
+    assert edge_a_c in irregular_edges
+
 def test_remove_node_with_cache(populated_graph):
     populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
     populated_graph.cache_nodes_by("type")
@@ -157,3 +332,23 @@ def test_remove_node_with_cache(populated_graph):
     }]
 
     assert input_ == output
+
+def test_remove_edge_with_cache(populated_graph):
+    populated_graph.cache_edges_by("type")
+
+    populated_graph.add_edge('3caaa8c09148493dbdf02c574b95526c', '2cdfebf3bf9547f19f0412ccdfbe03b7',
+        {"type": "irregular"}, 'c332692fcce54ea2ae85ece6788f7f05')
+
+    populated_graph.remove_edge('c172a359-9b7d-4ef3-bbb6-88277276b763')
+
+    assert (
+        populated_graph.get_edges_by_attr("type", "irregular") ==
+        [
+            {
+                'src': uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                'dst': uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+                'type': 'irregular',
+                'id': uuid.UUID('c332692fcce54ea2ae85ece6788f7f05')
+            }
+        ]
+    )
