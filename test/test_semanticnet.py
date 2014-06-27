@@ -39,6 +39,11 @@ def test_get_node(populated_graph):
         }
     )
 
+def test_has_node(populated_graph):
+    assert populated_graph.has_node('3caaa8c09148493dbdf02c574b95526c')
+    assert populated_graph.has_node('2cdfebf3bf9547f19f0412ccdfbe03b7')
+    assert populated_graph.has_node('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+
 def test_get_nodes(populated_graph):
     output = {
         uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'): {
@@ -118,6 +123,16 @@ def test_get_edge(populated_graph):
 
     with pytest.raises(sn.GraphException):
         populated_graph.get_edge('7eb91be5-4d37-46b8-9a61-a282deadbeef')
+
+def test_has_edge(populated_graph):
+    assert populated_graph.has_edge('5f5f44ec7c0144e29c5b7d513f92d9ab')
+    assert populated_graph.has_edge('7eb91be54d3746b89a61a282bcc207bb')
+    assert populated_graph.has_edge('c172a3599b7d4ef3bbb688277276b763')
+
+def test_has_edge_between(populated_graph):
+    assert populated_graph.has_edge_between('3caaa8c09148493dbdf02c574b95526c', '2cdfebf3bf9547f19f0412ccdfbe03b7')
+    assert populated_graph.has_edge_between('3caaa8c09148493dbdf02c574b95526c', '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+    assert populated_graph.has_edge_between('2cdfebf3bf9547f19f0412ccdfbe03b7', '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
 
 def test_get_edges_between(populated_graph):
     populated_graph.add_node(id_='261b076580434c299361f4a3c05db55d')

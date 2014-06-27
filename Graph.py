@@ -209,6 +209,10 @@ class Graph(object):
         id_ = self._extract_id(id_)
         return self._g.node[id_]
 
+    def has_node(self, id_):
+        id_ = self._extract_id(id_)
+        return self._g.has_node(id_)
+
     def get_node_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name of node id_.'''
         id_ = self._extract_id(id_)
@@ -244,6 +248,15 @@ class Graph(object):
         if self._g.has_node(src) and self._g.has_node(dst) and self._g.has_edge(src, dst):
             return self._g.edge[src][dst]
         return {}
+
+    def has_edge(self, id_):
+        id_ = self._extract_id(id_)
+        return id_ in self._edges
+
+    def has_edge_between(self, src, dst):
+        src = self._extract_id(src)
+        dst = self._extract_id(dst)
+        return self._g.has_node(src) and self._g.has_node(dst) and self._g.has_edge(src, dst)
 
     def set_edge_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for edge id_.'''
