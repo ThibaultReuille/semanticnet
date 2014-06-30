@@ -408,6 +408,48 @@ def test_networkx_graph(populated_graph):
     # but that it is not the same object
     assert nx_graph is not populated_graph._g
 
+def test_load_networkx_graph(netx_graph):
+    graph = sn.Graph()
+    graph.load_networkx_graph(netx_graph)
+
+    correct_nodes = {
+        0: {
+            "type": "A",
+            "id": 0
+        },
+        1: {
+            "type": "B",
+            "id": 1
+        },
+        2: {
+            "type": "C",
+            "id": 2
+        },
+    }
+    assert graph.get_nodes() == correct_nodes
+
+    correct_edges = {
+        0: {
+            "src": 0,
+            "dst": 1,
+            "type": "normal",
+            "id": 0
+        },
+        1: {
+            "src": 0,
+            "dst": 2,
+            "type": "normal",
+            "id": 1
+        },
+        2: {
+            "src": 1,
+            "dst": 2,
+            "type": "irregular",
+            "id": 2
+        },
+    }
+    assert graph.get_edges() == correct_edges
+
 def test_cache_by_empty(graph):
     graph.cache_nodes_by("type")
     graph.add_node({"type": "A"}, '8a09b47f77284348878c745741a326aa')

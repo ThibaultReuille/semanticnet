@@ -492,8 +492,29 @@ class Graph(object):
                 )
                 self._g.edge[src][dst][id_]["id"] = id_
 
+    def _check_key_presence(self, d, key, val):
+        try:
+            d[key]
+        except KeyError:
+            d[key] = val
+
     def networkx_graph(self):
         return copy.deepcopy(self._g)
+
+    def load_networkx_graph(self, nxgraph):
+        self._g = nxgraph
+
+        # add id fields on nodes that don't have them
+        for id_ in self._g.nodes():
+            self._check_key_presence(self._g.node[id_], "id", id_)
+
+        for src, dst in nxgraph.edges():
+            for key in nxgraph.edge[src][dst]:
+                attrs = nxgraph.edge[src][dst][key]
+                self._edges[key] = attrs
+                self._check_key_presence(self._edges[key], "id", key)
+                self._check_key_presence(self._edges[key], "src", src)
+                self._check_key_presence(self._edges[key], "dst", dst)
 
 if __name__ == "__main__":
     print("Please import this module !")

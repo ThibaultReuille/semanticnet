@@ -2,6 +2,7 @@ import json
 import os
 import pytest
 import semanticnet as sn
+import networkx as nx
 import uuid
 
 @pytest.fixture
@@ -107,4 +108,15 @@ def correct_output():
 def correct_output_graph():
     g = sn.Graph()
     g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json"))
+    return g
+
+@pytest.fixture
+def netx_graph():
+    g = nx.MultiGraph()
+    g.add_node(0, {"type": "A"})
+    g.add_node(1, {"type": "B"})
+    g.add_node(2, {"type": "C"})
+    g.add_edge(0, 1, 0, {"type": "normal"})
+    g.add_edge(0, 2, 1, {"type": "normal"})
+    g.add_edge(1, 2, 2, {"type": "irregular"})
     return g
