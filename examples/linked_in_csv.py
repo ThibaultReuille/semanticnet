@@ -6,9 +6,8 @@ import semanticnet as sn
 import sys
 
 class Contact(object):
-    def __init__(self, name, email_domain, company, title):
+    def __init__(self, name, company, title):
         self.name = name
-        self.email_domain = email_domain
         self.company = company
         self.title = title
 
@@ -25,10 +24,12 @@ def process_contact(graph, contact):
     
     # add all nodes
     for key, val in vars(contact).items():
+        if val == "":
+            continue
         if key == "name":
-            name_node = add_node(graph, {"label": val})
+            name_node = add_node(graph, {"label": val, "type": key, "depth": 0})
         else:
-            nodes.append(add_node(graph, {"label": val}))
+            nodes.append(add_node(graph, {"label": val, "type": key}))
 
     # connect this contact's name node to every other node for this contact
     for node in nodes:
@@ -39,20 +40,26 @@ if __name__ == "__main__":
     if len(sys.argv) <= 1:
         print("Need a CSV file.")
 
+    limit = 1000
+    processed = 0
     graph = sn.Graph()
     contact_list_filename = sys.argv[1]
 
-    with open(contact_list_filename) as f:
-        reader = csv.DictReader(f)
+    with open(contact_list_filename, 'rU') as f:
+        reader = csv.DictReader(f, dialect="excel")
         for row in reader:
             contact = Contact(
                 " ".join([row["First Name"], row["Last Name"]]),
-                row["E-mail Address"].split("@")[1],
                 row["Company"],
                 row["Job Title"]
             )
 
             process_contact(graph, contact)
+
+            processed += 1
+
+            if processed >= limit:
+                break
 
     path = os.path.dirname(os.path.abspath(contact_list_filename))
     file_ext = os.path.splitext(contact_list_filename)
