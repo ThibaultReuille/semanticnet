@@ -6,22 +6,18 @@ import semanticnet as sn
 import shodan
 import sys
 
-nodes = {}
-
 def get_node(data, field):
-    global nodes
-
     if field not in data:
         return None
 
     field_value = str(data[field])
 
-    if field_value in nodes:
-        node = nodes[field_value]
-    else:
-        node = graph.add_node({"label": field_value, "type": field})
-        nodes[field_value] = node
-    return node
+    node = graph.get_nodes_by_attr("label", field_value, nosingleton=True)
+
+    if not node:
+        return graph.add_node({"label": field_value, "type": field})
+
+    return node["id"]
 
 def connect(graph, src, dst):
     if src != None and dst != None:
@@ -50,7 +46,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     graph = sn.Graph()
-    global nodes
+    graph.cache_nodes_by("label") # all labels will be unique
 
     for match in search_results['matches']:
         ip_node = get_node(match, 'ip_str')
@@ -58,26 +54,23 @@ if __name__ == "__main__":
         port_node = get_node(match, 'port')
         title_node = get_node(match, 'title')
 
-        if 'location' in match:
-            if 'country_name' in match['location']:
-                if match['location']['country_name'] in nodes:
-                    country_node = nodes[match['location']['country_name']]
-                else:
-                    country_node = graph.add_node({"type": "country_name",
-                        "label": match['location']['country_name'],
-                        "depth": 0
-                        }
-                    )
-                    nodes[match['location']['country_name']] = country_node
+        if 'location' in match and 'country_name' in match['location']:
+            country_name = match['location']['country_name']
+            country_node = graph.get_nodes_by_attr("label", country_name, nosingleton=True)
+            if not country_node:
+                country_node = graph.add_node({"type": "country_name",
+                    "label": country_name,
+                    "depth": 0
+                })
             else:
-                country_node = None
+                country_node = country_node["id"]
         else:
             country_node = None
 
-            connect(graph, asn_node, country_node)
-            connect(graph, ip_node, asn_node)
-            connect(graph, ip_node, port_node)
-            connect(graph, ip_node, title_node)
+        connect(graph, asn_node, country_node)
+        connect(graph, ip_node, asn_node)
+        connect(graph, ip_node, port_node)
+        connect(graph, ip_node, title_node)
 
     postfix = args.search.replace(" ", "_")
     save_filename = "shodan_{}.json".format(postfix)

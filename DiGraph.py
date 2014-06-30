@@ -12,7 +12,7 @@ class DiGraph(Graph):
         id_ = self._extract_id(id_)
         if self._g.has_node(id_):
             # for DiGraph, remove predecessors AND successors
-            for successor in self._g.neighbors(id_):
+            for successor in self._g.successors(id_):
                 # need to iterate over items() (which copies the dict) because we are
                 # removing items from the edges dict as we are iterating over it
                 for edge in self._g.edge[id_][successor].items():
@@ -21,6 +21,7 @@ class DiGraph(Graph):
                 for edge in self._g.edge[predecessor][id_].items():
                     self.remove_edge(self._g.edge[predecessor][id_][edge[0]]["id"])
 
+            self._remove_node_from_cache(id_)
             self._g.remove_node(id_)
         else:
             raise GraphException("Node ID not found.")

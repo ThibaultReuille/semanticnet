@@ -11,7 +11,6 @@ import urlparse
 delim_pattern = '(#separator.+)'
 var_line_pattern = '(\#.+)'
 var_pattern = '((?<=\#).+)'
-nodes = {}
 
 def log_delim(log):
     global delim_pattern
@@ -70,9 +69,7 @@ def print_data(data):
                 print("{}: {}".format(key, val))
             print
 
-def get_node(field, log_entry, label=""):
-    global nodes
-
+def get_node(graph, field, log_entry, label=""):
     if label == "":
         try:
             field_value = log_entry[field]
@@ -84,13 +81,12 @@ def get_node(field, log_entry, label=""):
     else:
         field_value = label
 
-    if field_value in nodes:
-        node = nodes[field_value]
-    else:
-        node = graph.add_node({"label": field_value, "type": field})
-        nodes[field_value] = node
+    node = graph.get_nodes_by_attr("label", field_value, nosingleton=True)
 
-    return node
+    if not node:
+        return graph.add_node({"label": field_value, "type": field})
+
+    return node['id']
 
 def connect(graph, src, dst, attrs):
     edges = graph.get_edges_between(src, dst)
@@ -134,13 +130,13 @@ if __name__ == "__main__":
         print_data(data)
 
     graph = sn.DiGraph()
-    global nodes
 
     for ip, items in data.items():
-        nodes = {}
+        graph.clear_node_cache()
+        graph.cache_nodes_by("label", build=False)
         for item in items:
-            src_ip_node = get_node('id.orig_h', item)
-            user_agent_node = get_node('user_agent', item)
+            src_ip_node = get_node(graph, 'id.orig_h', item)
+            user_agent_node = get_node(graph, 'user_agent', item)
 
             if src_ip_node == None or user_agent_node == None:
                 continue
@@ -149,7 +145,7 @@ if __name__ == "__main__":
 
             label = item['host'] + item['uri']
             ext = os.path.splitext(item['uri'])[1]
-            host_node = get_node("host:{}".format(ext), item, label)
+            host_node = get_node(graph, "host:{}".format(ext), item, label)
 
             if host_node == None:
                 continue
@@ -167,7 +163,7 @@ if __name__ == "__main__":
             ref = urlparse.urlparse(ref_url)
             ref = ref.netloc + ref.path
 
-            ref_node = get_node('referrer', item, ref)
+            ref_node = get_node(graph, 'referrer', item, ref)
 
             if ref_node == None:
                 continue

@@ -19,12 +19,27 @@ class Event(object):
         self.name = name
         self.attributes = attributes
 
+class CacheMeta(object):
+    def __init__(self, get_func, get_items_func, cache_func, cache):
+        self.get_func = get_func
+        self.get_items_func = get_items_func
+        self.cache_func = cache_func
+        self.cache = cache
+
 class Graph(object):
     '''A simple Graph structure which lets you focus on the data.'''
 
     def __init__(self, verbose=False):
         self._g = nx.MultiGraph()
         self._edges = {}
+
+        self._node_cache = {}
+        self._edge_cache = {}
+        self._cache_meta = {
+            "node": CacheMeta(self.get_node, self.get_nodes, self._cache_node, self._node_cache),
+            "edge": CacheMeta(self.get_edge, self.get_edges, self._cache_edge, self._edge_cache)
+        }
+        
         self.meta = {}
         self.timeline = []
 
@@ -52,6 +67,86 @@ class Graph(object):
 
         return id_
 
+    def _cache_item(self, item_type, attr_name, attr_values):
+        # if we have not cached anything by this attr before,
+        # create an empty dict for it
+        if attr_name not in self._cache_meta[item_type].cache:
+            self._cache_meta[item_type].cache[attr] = {}
+
+        # if we haven't seen this attr value before, make an empty list for it
+        if attr_values[attr_name] not in self._cache_meta[item_type].cache[attr_name]:
+            self._cache_meta[item_type].cache[attr_name][attr_values[attr_name]] = []
+
+        # add it to the cache
+        self._cache_meta[item_type].cache[attr_name][attr_values[attr_name]].append(attr_values)
+
+    def _cache_node(self, attr, node):
+        '''Cache a node in self._node_cache'''
+        self._cache_item("node", attr, node)
+
+    def _cache_edge(self, attr, edge):
+        '''Cache an edge in self._edge_cache'''
+        self._cache_item("edge", attr, edge)
+
+    def _cache_new(self, item_type, attrs):
+        for key in self._cache_meta[item_type].cache:
+            if key in attrs:
+                self._cache_meta[item_type].cache_func(key, attrs)
+
+    def _cache_new_node(self, attrs):
+        '''Checks a new node's attributes and caches it if we are caching by one or more
+        of its attributes.'''
+        self._cache_new("node", attrs)
+
+    def _cache_new_edge(self, attrs):
+        '''Checks a new edge's attributes and caches it if we are caching by one or more
+        of its attributes.'''
+        self._cache_new("edge", attrs)
+
+    def _remove_item_from_cache(self, item_type, id_):
+        item = self._cache_meta[item_type].get_func(id_)
+        for attr, val in item.iteritems():
+            try:
+                self._cache_meta[item_type].cache[attr][val].remove(item)
+            except KeyError:
+                pass
+
+    def _remove_node_from_cache(self, id_):
+        '''Removes node id_ from all places it occurs in the cache, if anywhere.'''
+        self._remove_item_from_cache("node", id_)
+
+    def _remove_edge_from_cache(self, id_):
+        '''Removes edge id_ from all places it occurs in the cache, if anywhere.'''
+        self._remove_item_from_cache("edge", id_)
+
+    def _update_item_cache(self, item_type, id_, attr_name):
+        # if we are not caching by this attribute, there is nothing to do
+        if attr_name not in self._cache_meta[item_type].cache:
+            return
+
+        # remove any nodes that are in the wrong place in the cache
+        for key, nodes in self._cache_meta[item_type].cache[attr_name].items():
+            for node in nodes:
+                if key not in node:
+                    self._cache_meta[item_type].cache[attr_name][key].remove(node)
+                    break # should only happen once
+
+        self._cache_meta[item_type].cache_func(attr_name, self._cache_meta[item_type].get_func(id_))
+
+    def _update_node_cache(self, id_, attr_name):
+        '''Update the cache for the given node with ID id_ and attribute attr_name
+
+        IMPORTANT: Assumes that the attribute has already been set with the new value!
+        '''
+        self._update_item_cache("node", id_, attr_name)
+
+    def _update_edge_cache(self, id_, attr_name):
+        '''Update the cache for the given edge with ID id_ and attribute attr_name
+
+        IMPORTANT: Assumes that the attribute has already been set with the new value!
+        '''
+        self._update_item_cache("edge", id_, attr_name)
+
     def log(self, line):
         '''Print the message line to standard output.'''
         if self.verbose:
@@ -74,18 +169,21 @@ class Graph(object):
         data['id'] = id_ # add the ID to the attributes
         self.log("add_node " + str(data) + " = " + str(id_))
         self._g.add_node(id_, data)
+        self._cache_new_node(data)
         return id_
 
     def remove_node(self, id_):
         '''Removes node id_.'''
         id_ = self._extract_id(id_)
         if self._g.has_node(id_):
+            # remove all edges incident on this node
             for neighbor in self._g.neighbors(id_):
                 # need to iterate over items() (which copies the dict) because we are
                 # removing items from the edges dict as we are iterating over it
                 for edge in self._g.edge[id_][neighbor].items():
                     # edge[0] is the edge's ID
                     self.remove_edge(self._g.edge[id_][neighbor][edge[0]]["id"])
+            self._remove_node_from_cache(id_)
             self._g.remove_node(id_)
         else:
             raise GraphException("Node ID not found.")
@@ -119,6 +217,7 @@ class Graph(object):
                 )
             )
             self._edges[id_] = self._g.edge[src][dst][id_]
+            self._cache_new_edge(self._edges[id_])
             return id_
         else:
             raise GraphException("Node ID not found.")
@@ -129,6 +228,7 @@ class Graph(object):
         if id_ in self._edges:
             edge = self._edges[id_]
             self._g.remove_edge(edge["src"], edge["dst"], id_)
+            self._remove_edge_from_cache(id_)
             del self._edges[id_]
         else:
             raise GraphException("Node ID not found.")
@@ -142,6 +242,7 @@ class Graph(object):
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
 
             self._g.node[id_][attr_name] = value
+            self._update_node_cache(id_, attr_name)
         else:
             raise GraphException("Node id not found, can't set attribute.")
 
@@ -152,6 +253,10 @@ class Graph(object):
     def get_node(self, id_):
         id_ = self._extract_id(id_)
         return self._g.node[id_]
+
+    def has_node(self, id_):
+        id_ = self._extract_id(id_)
+        return self._g.has_node(id_)
 
     def get_node_attribute(self, id_, attr_name):
         '''Returns the attribute attr_name of node id_.'''
@@ -189,6 +294,15 @@ class Graph(object):
             return self._g.edge[src][dst]
         return {}
 
+    def has_edge(self, id_):
+        id_ = self._extract_id(id_)
+        return id_ in self._edges
+
+    def has_edge_between(self, src, dst):
+        src = self._extract_id(src)
+        dst = self._extract_id(dst)
+        return self._g.has_node(src) and self._g.has_node(dst) and self._g.has_edge(src, dst)
+
     def set_edge_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for edge id_.'''
         id_ = self._extract_id(id_)
@@ -197,6 +311,7 @@ class Graph(object):
                 raise GraphException("Attribute {} is reserved.".format(attr_name))
 
             self._edges[id_][attr_name] = value
+            self._update_edge_cache(id_, attr_name)
         else:
             raise GraphException("Edge id '" + str(id_) + "' not found!")
 
@@ -222,17 +337,130 @@ class Graph(object):
     def add_event(self, timecode, name, attributes):
         self.timeline.append(Event(timecode, name, attributes))
 
+    def _cache_by(self, item_type, attr, build):
+        # If we ARE already caching by this value, do nothing
+        if attr in self._cache_meta[item_type].cache:
+            return
+
+        # If we ARE NOT not already caching by this value, initialize the dict for it.
+        # This is also done in _cache_node/edge(), but this is needed for cases
+        # where the user decides to start caching by an attribute, and they haven't
+        # added any nodes/edges with that attribute yet
+        if attr not in self._cache_meta[item_type].cache:
+            self._cache_meta[item_type].cache[attr] = {}
+
+        if not build:
+            return
+
+        for id_, item_attrs in self._cache_meta[item_type].get_items_func().items():
+            if attr in item_attrs:
+                self._cache_meta[item_type].cache_func(attr, item_attrs)
+
+    def cache_nodes_by(self, attr, build=True):
+        '''Tells SemanticNet to cache nodes by the given attribute attr.
+
+        After a call to this method, nodes will be accessible by calls to the method get_node_by_attr().
+        See the docs for that function for more detail.
+
+        Optinally, if the user wishes to tell SemanticNet to start caching NEW nodes of type attr, but not
+        to build a cache from the existing nodes, they may set the 'build' flag to False.
+        '''
+        self._cache_by("node", attr, build)
+
+    def cache_edges_by(self, attr, build=True):
+        '''Tells SemanticNet to cache edges by the given attribute attr.
+
+        After a call to this method, edges will be accessible by calls to the method get_edges_by_attr().
+        See the docs for that function for more detail.
+
+        Optinally, if the user wishes to tell SemanticNet to start caching NEW edges of type attr, but not
+        to build a cache from the existing edges, they may set the 'build' flag to False.
+        '''
+        self._cache_by("edge", attr, build)
+
+    def _clear_item_cache(self, item_type, attr):
+        if attr == "":
+            for key, val in self._cache_meta[item_type].cache.items():
+                del self._cache_meta[item_type].cache[key]
+        elif attr in self._node_cache:
+            self._cache_meta[item_type].cache[attr] = {}
+
+    def clear_node_cache(self, attr=""):
+        '''Delete the node cache. If attr is given, delete the cache for that attribute.'''
+        self._clear_item_cache("node", attr)
+
+    def clear_edge_cache(self, attr=""):
+        '''Delete the edge cache. If attr is given, delete the cache for that attribute.'''
+        self._clear_item_cache("edge", attr)
+
+    def _get_items_by_attr(self, item_type, attr, val, nosingleton):
+        items = self._cache_meta[item_type].cache.get(attr)
+
+        # if the attribute doesn't exist, return an empty dict
+        if items == None:
+            return {}
+
+        # if no value was specified for the attribute, return the whole dict
+        # of items keyed by attr
+        if val == None:
+            return items
+
+        # if there are no items with the given attribute and value, return an empty list
+        if val not in items:
+            return []
+
+        # if user set nosingleton to true, and there is only a single node with this value,
+        # just return the node, rather than a singleton list
+        if nosingleton and len(items[val]) == 1:
+            return items[val][0]
+
+        # otherwise, return all nodes with the attribute attr and the value val
+        return items[val]
+
+    def get_nodes_by_attr(self, attr, val=None, nosingleton=False):
+        '''Gets all nodes with the given attribute attr and value val.
+
+        If val is not specified, returns a dict of all nodes, keyed by attr.
+
+        If there are no nodes with the given attr or val, returns an empty list.
+
+        Optionally, if the nosingleton parameter is set to True, and there is only one node in a list,
+        the method will only return that single node, rather than a singleton list. This is useful,
+        for instance, if the user knows all nodes with attributes of a certain type will be unique,
+        and wishes to simply use attr as the node key.
+        '''
+        return self._get_items_by_attr("node", attr, val, nosingleton)
+
+    def get_edges_by_attr(self, attr, val=None, nosingleton=False):
+        '''Gets all edges with the given attribute attr and value val.
+
+        If val is not specified, returns a dict of all edges, keyed by attr.
+
+        If there are no edges with the given attr or val, returns an empty list.
+
+        Optionally, if the nosingleton parameter is set to True, and there is only one edge in a list,
+        the method will only return that single edge, rather than a singleton list. This is useful,
+        for instance, if the user knows all edges with attributes of a certain type will be unique,
+        and wishes to simply use attr as the edge key.
+        '''
+        return self._get_items_by_attr("edge", attr, val, nosingleton)
+
+    def _get_export_id_str(self, id_):
+        if id_.__class__.__name__ == "UUID":
+            return id_.hex
+        return id_
+
     def save_json(self, filename):
         '''Exports the graph to a JSON file for use in the Gaia visualizer.'''
         with open(filename, 'w') as outfile:
             graph = dict()
             graph["meta"] = self.meta
-            graph["nodes"] = [ dict(chain(self._g.node[id_].items(), {"id": id_.hex}.items())) for id_ in self._g.nodes() ]
+            graph["nodes"] = [ dict(chain(self._g.node[id_].items(), {"id": self._get_export_id_str(id_)}.items())) for id_ in self._g.nodes() ]
             graph["edges"] = [
                 dict(
                     chain(
                         self._g.edge[i][j][key].items(),
-                        { "src": i.hex, "dst": j.hex, "id": key.hex}.items()
+                        { "src": self._get_export_id_str(i), "dst": self._get_export_id_str(j), "id": self._get_export_id_str(key)}.items()
                     )
                 )
                 for i, j in self._g.edges()
@@ -249,12 +477,12 @@ class Graph(object):
             self.timeline = graph["timeline"]
 
             for node in graph["nodes"]:
-                self._g.add_node(uuid.UUID(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+                self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
 
             for edge in graph["edges"]:
-                src = uuid.UUID(edge["src"])
-                dst = uuid.UUID(edge["dst"])
-                id_ = uuid.UUID(edge["id"]) if edge["id"] != None else self._create_uuid()
+                src = self._extract_id(edge["src"])
+                dst = self._extract_id(edge["dst"])
+                id_ = self._extract_id(edge["id"]) if edge["id"] != None else self._create_uuid()
                 self.add_edge(
                     src,
                     dst,

@@ -1,79 +1,9 @@
+import os
 import pytest
 import semanticnet as sn
-import uuid
-import os
 import time
-import json
+import uuid
 
-### FIXTURES ###
-@pytest.fixture
-def uuid_str():
-    return '3caaa8c09148493dbdf02c574b95526c'
-
-@pytest.fixture
-def uuid_obj():
-    return uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
-
-@pytest.fixture
-def graph():
-    return sn.Graph()
-
-@pytest.fixture
-def populated_graph():
-    g = sn.Graph()
-    a = g.add_node({"type": "A"}, '3caaa8c09148493dbdf02c574b95526c')
-    b = g.add_node({"type": "B"}, '2cdfebf3bf9547f19f0412ccdfbe03b7')
-    c = g.add_node({"type": "C"}, '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
-    g.add_edge(a, b, {"type": "normal"}, '5f5f44ec7c0144e29c5b7d513f92d9ab')
-    g.add_edge(a, c, {"type": "normal"}, '7eb91be54d3746b89a61a282bcc207bb')
-    g.add_edge(b, c, {"type": "irregular"}, 'c172a3599b7d4ef3bbb688277276b763')
-    return g
-
-@pytest.fixture
-def populated_digraph():
-    g = sn.DiGraph()
-    a = g.add_node({"type": "A"}, '3caaa8c09148493dbdf02c574b95526c')
-    b = g.add_node({"type": "B"}, '2cdfebf3bf9547f19f0412ccdfbe03b7')
-    c = g.add_node({"type": "C"}, '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
-    g.add_edge(a, b, {"type": "normal"}, '5f5f44ec7c0144e29c5b7d513f92d9ab')
-    g.add_edge(b, a, {"type": "normal"}, 'f3674fcc691848ebbd478b1bfb3e84c3')
-    g.add_edge(a, c, {"type": "normal"}, '7eb91be54d3746b89a61a282bcc207bb')
-    g.add_edge(b, c, {"type": "irregular"}, 'c172a3599b7d4ef3bbb688277276b763')
-    return g
-
-@pytest.fixture
-def test_output():
-    graph = sn.Graph()
-
-    a = graph.add_node({"label" : "A"}, '6cf546f71efe47578f7a1400871ef6b8')
-    b = graph.add_node({"label" : "B"}, 'bcb388bb24a74d978fa2006ed278b2fe')
-    c = graph.add_node({"label" : "C"}, 'd6523f4f9d5240d2a92e341f4ca00a78')
-
-    graph.add_edge(a, b, {"type" : "belongs"}, 'ff8a8a8093cf436aa3b0127c71ddc11d')
-    graph.add_edge(b, c, {"type" : "owns"}, '081369f6197b467abe97b3efe8cc4640')
-    graph.add_edge(c, a, {"type" : "has"}, 'b3a245098d5d482f893c6d63606c7e91')
-
-    graph.save_json("test_output.json")
-
-    with open("test_output.json") as f:
-        jsonObj = json.load(f)
-
-    return jsonObj
-
-@pytest.fixture
-def correct_output():
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json")) as f:
-        jsonObj = json.load(f)
-
-    return jsonObj
-
-@pytest.fixture
-def correct_output_graph():
-    g = sn.Graph()
-    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json"))
-    return g
-
-### TESTS ###
 def test__create_uuid(graph):
     id_ = graph._create_uuid()
     assert id_.__class__.__name__ == 'UUID'
@@ -99,6 +29,20 @@ def test_add_node(graph):
     node = graph.get_node_attributes(a)
     assert "type" in node
     assert node["type"] == "A"
+
+def test_get_node(populated_graph):
+    assert (
+        populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c') ==
+        {
+            "type": "A",
+            "id": uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
+        }
+    )
+
+def test_has_node(populated_graph):
+    assert populated_graph.has_node('3caaa8c09148493dbdf02c574b95526c')
+    assert populated_graph.has_node('2cdfebf3bf9547f19f0412ccdfbe03b7')
+    assert populated_graph.has_node('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
 
 def test_get_nodes(populated_graph):
     output = {
@@ -179,6 +123,16 @@ def test_get_edge(populated_graph):
 
     with pytest.raises(sn.GraphException):
         populated_graph.get_edge('7eb91be5-4d37-46b8-9a61-a282deadbeef')
+
+def test_has_edge(populated_graph):
+    assert populated_graph.has_edge('5f5f44ec7c0144e29c5b7d513f92d9ab')
+    assert populated_graph.has_edge('7eb91be54d3746b89a61a282bcc207bb')
+    assert populated_graph.has_edge('c172a3599b7d4ef3bbb688277276b763')
+
+def test_has_edge_between(populated_graph):
+    assert populated_graph.has_edge_between('3caaa8c09148493dbdf02c574b95526c', '2cdfebf3bf9547f19f0412ccdfbe03b7')
+    assert populated_graph.has_edge_between('3caaa8c09148493dbdf02c574b95526c', '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+    assert populated_graph.has_edge_between('2cdfebf3bf9547f19f0412ccdfbe03b7', '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
 
 def test_get_edges_between(populated_graph):
     populated_graph.add_node(id_='261b076580434c299361f4a3c05db55d')
@@ -361,6 +315,21 @@ def test_save_json(test_output, correct_output):
 
     os.remove("test_output.json")
 
+def test_save_json_plaintext(test_output_plaintext, test_output_plaintext_correct):
+    assert test_output_plaintext["timeline"] == test_output_plaintext_correct["timeline"]
+    assert test_output_plaintext["meta"] == test_output_plaintext_correct["meta"]
+
+    for node in test_output_plaintext["nodes"]:
+        assert node in test_output_plaintext_correct["nodes"]
+
+    for edge in test_output_plaintext["edges"]:
+        # for an undirected edge, reversing src and dst is valid
+        try:
+            assert edge in test_output_plaintext_correct["edges"]
+        except AssertionError:
+            edge["src"], edge["dst"] = edge["dst"], edge["src"]
+            assert edge in test_output_plaintext_correct["edges"]
+
 def test_load_json(correct_output_graph):
     nodes = {
         uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'): {'label': 'A'},
@@ -393,6 +362,38 @@ def test_load_json(correct_output_graph):
 
     assert correct_output_graph.get_edges() == edges
 
+def test_load_json_plaintext(correct_output_graph_plaintext_from_file):
+    nodes = {
+        'a': {'label': 'A'},
+        'b': {'label': 'B'},
+        'c': {'label': 'C'}
+    }
+
+    assert correct_output_graph_plaintext_from_file.get_nodes() == nodes
+
+    edges = {
+        'owns': {
+            'src': 'b',
+            'dst': 'c',
+            'type': 'owns',
+            'id': 'owns'
+        },
+        'has': {
+            'src': 'c',
+            'dst': 'a',
+            'type': 'has',
+            'id': 'has'
+        },
+        'belongs': {
+            'src': 'a',
+            'dst': 'b',
+            'type': 'belongs',
+            'id': 'belongs'
+        }
+    }
+
+    assert correct_output_graph_plaintext_from_file.get_edges() == edges
+
 def test_networkx_graph(populated_graph):
     nx_graph = populated_graph.networkx_graph()
 
@@ -406,3 +407,101 @@ def test_networkx_graph(populated_graph):
 
     # but that it is not the same object
     assert nx_graph is not populated_graph._g
+
+def test_cache_by_empty(graph):
+    graph.cache_nodes_by("type")
+    graph.add_node({"type": "A"}, '8a09b47f77284348878c745741a326aa')
+    cache = graph.get_nodes_by_attr("type", "A", nosingleton=True)
+    assert (
+        cache ==
+        {
+            "id": uuid.UUID('8a09b47f77284348878c745741a326aa'),
+            "type": "A"
+        }
+    )
+
+def test_get_nodes_by_attr(populated_graph):
+    populated_graph.add_node({"type": "A"}, '2b673235a0b94935ab8b6b9de178d341')
+
+    # a non-existent attr should return an empty dict
+    assert populated_graph.get_nodes_by_attr("label") == {}
+
+    # cache by the attribute "type"
+    populated_graph.cache_nodes_by("type")
+
+    ### get all nodes with attr "type"
+    input_ = populated_graph.get_nodes_by_attr("type")
+    output = {
+        "B": [{
+            "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+            'type': 'B'
+        }],
+        "A": [
+            {
+                "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+                "type": "A"
+            },
+            {
+                "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+                "type": "A"
+            }
+        ],
+        "C": [{
+            "id": uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+            'type': 'C'
+        }]
+    }
+
+    assert input_ == output
+
+    ### get all nodes of "type" "B"
+    input_ = populated_graph.get_nodes_by_attr("type", "B")
+    output = [{
+        "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+        'type': 'B'
+    }]
+
+    assert input_ == output
+
+    ### if user specifies 'nosingleton=False', return a singleton list
+    input_ = populated_graph.get_nodes_by_attr("type", "B", nosingleton=True)
+    output = {
+        "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+        'type': 'B'
+    }
+
+    assert input_ == output
+
+    ### get all nodes of "type" "A"
+    input_ = populated_graph.get_nodes_by_attr("type", "A")
+    output = [
+        {
+            "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            "type": "A"
+        },
+        {
+            "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+            "type": "A"
+        }
+    ]
+
+    assert input_ == output
+
+    ### if user specifies 'nosingleton=True', but there is more than one,
+    ### should still return the same list, having no affect on the output
+    input_ = populated_graph.get_nodes_by_attr("type", "A", nosingleton=True)
+    output = [
+        {
+            "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            "type": "A"
+        },
+        {
+            "id": uuid.UUID('2b673235a0b94935ab8b6b9de178d341'),
+            "type": "A"
+        }
+    ]
+
+    assert input_ == output
+
+    ### if the attr is in the cache, but the value is not, return []
+    assert populated_graph.get_nodes_by_attr("type", "D") == []
