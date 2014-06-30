@@ -315,6 +315,21 @@ def test_save_json(test_output, correct_output):
 
     os.remove("test_output.json")
 
+def test_save_json_plaintext(test_output_plaintext, test_output_plaintext_correct):
+    assert test_output_plaintext["timeline"] == test_output_plaintext_correct["timeline"]
+    assert test_output_plaintext["meta"] == test_output_plaintext_correct["meta"]
+
+    for node in test_output_plaintext["nodes"]:
+        assert node in test_output_plaintext_correct["nodes"]
+
+    for edge in test_output_plaintext["edges"]:
+        # for an undirected edge, reversing src and dst is valid
+        try:
+            assert edge in test_output_plaintext_correct["edges"]
+        except AssertionError:
+            edge["src"], edge["dst"] = edge["dst"], edge["src"]
+            assert edge in test_output_plaintext_correct["edges"]
+
 def test_load_json(correct_output_graph):
     nodes = {
         uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'): {'label': 'A'},
@@ -346,6 +361,38 @@ def test_load_json(correct_output_graph):
     }
 
     assert correct_output_graph.get_edges() == edges
+
+def test_load_json_plaintext(correct_output_graph_plaintext_from_file):
+    nodes = {
+        'a': {'label': 'A'},
+        'b': {'label': 'B'},
+        'c': {'label': 'C'}
+    }
+
+    assert correct_output_graph_plaintext_from_file.get_nodes() == nodes
+
+    edges = {
+        'owns': {
+            'src': 'b',
+            'dst': 'c',
+            'type': 'owns',
+            'id': 'owns'
+        },
+        'has': {
+            'src': 'c',
+            'dst': 'a',
+            'type': 'has',
+            'id': 'has'
+        },
+        'belongs': {
+            'src': 'a',
+            'dst': 'b',
+            'type': 'belongs',
+            'id': 'belongs'
+        }
+    }
+
+    assert correct_output_graph_plaintext_from_file.get_edges() == edges
 
 def test_networkx_graph(populated_graph):
     nx_graph = populated_graph.networkx_graph()
@@ -458,4 +505,3 @@ def test_get_nodes_by_attr(populated_graph):
 
     ### if the attr is in the cache, but the value is not, return []
     assert populated_graph.get_nodes_by_attr("type", "D") == []
-

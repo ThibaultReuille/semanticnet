@@ -40,6 +40,44 @@ def populated_digraph():
     return g
 
 @pytest.fixture
+def correct_output_graph_plaintext():
+    graph = sn.Graph()
+
+    a = graph.add_node({"label" : "A"}, 'a')
+    b = graph.add_node({"label" : "B"}, 'b')
+    c = graph.add_node({"label" : "C"}, 'c')
+
+    graph.add_edge(a, b, {"type" : "belongs"}, 'belongs')
+    graph.add_edge(b, c, {"type" : "owns"}, 'owns')
+    graph.add_edge(c, a, {"type" : "has"}, 'has')
+
+    return graph
+
+@pytest.fixture
+def correct_output_graph_plaintext_from_file():
+    g = sn.Graph()
+    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct_plaintext.json"))
+    return g
+
+@pytest.fixture
+def test_output_plaintext(correct_output_graph_plaintext):
+    correct_output_graph_plaintext.save_json("test_output_plaintext.json")
+
+    with open("test_output_plaintext.json") as f:
+        jsonObj = json.load(f)
+
+    os.remove("test_output_plaintext.json")
+
+    return jsonObj
+
+@pytest.fixture
+def test_output_plaintext_correct():
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct_plaintext.json")) as f:
+        jsonObj = json.load(f)
+
+    return jsonObj
+
+@pytest.fixture
 def test_output():
     graph = sn.Graph()
 

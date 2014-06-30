@@ -445,17 +445,22 @@ class Graph(object):
         '''
         return self._get_items_by_attr("edge", attr, val, nosingleton)
 
+    def _get_export_id_str(self, id_):
+        if id_.__class__.__name__ == "UUID":
+            return id_.hex
+        return id_
+
     def save_json(self, filename):
         '''Exports the graph to a JSON file for use in the Gaia visualizer.'''
         with open(filename, 'w') as outfile:
             graph = dict()
             graph["meta"] = self.meta
-            graph["nodes"] = [ dict(chain(self._g.node[id_].items(), {"id": id_.hex}.items())) for id_ in self._g.nodes() ]
+            graph["nodes"] = [ dict(chain(self._g.node[id_].items(), {"id": self._get_export_id_str(id_)}.items())) for id_ in self._g.nodes() ]
             graph["edges"] = [
                 dict(
                     chain(
                         self._g.edge[i][j][key].items(),
-                        { "src": i.hex, "dst": j.hex, "id": key.hex}.items()
+                        { "src": self._get_export_id_str(i), "dst": self._get_export_id_str(j), "id": self._get_export_id_str(key)}.items()
                     )
                 )
                 for i, j in self._g.edges()
@@ -472,12 +477,12 @@ class Graph(object):
             self.timeline = graph["timeline"]
 
             for node in graph["nodes"]:
-                self._g.add_node(uuid.UUID(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+                self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
 
             for edge in graph["edges"]:
-                src = uuid.UUID(edge["src"])
-                dst = uuid.UUID(edge["dst"])
-                id_ = uuid.UUID(edge["id"]) if edge["id"] != None else self._create_uuid()
+                src = self._extract_id(edge["src"])
+                dst = self._extract_id(edge["dst"])
+                id_ = self._extract_id(edge["id"]) if edge["id"] != None else self._create_uuid()
                 self.add_edge(
                     src,
                     dst,
