@@ -492,6 +492,9 @@ class Graph(object):
                 )
                 self._g.edge[src][dst][id_]["id"] = id_
 
+    def copy(self):
+        return copy.deepcopy(self)
+
     def _check_key_presence(self, d, key, val):
         try:
             d[key]
