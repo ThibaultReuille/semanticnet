@@ -26,3 +26,20 @@ def difference(A, B):
     g = sn.Graph()
     g.load_networkx_graph(C)
     return g
+
+def intersection(A, B):
+    '''Returns a new graph which contains the ndoes and edges in both A and B.'''
+    A = _extract_networkx_graph(A)
+    B = _extract_networkx_graph(B)
+    C = A.copy()
+    C.remove_nodes_from(n for n in A.nodes() if n not in B.nodes())
+    C.remove_edges_from(
+        (src, dst, key)
+        for src, dst in A.edges()
+        for key in A.edge[src][dst]
+        if (src, dst) not in B.edges()
+            or key not in B.edge[src][dst]
+    )
+    g = sn.Graph()
+    g.load_networkx_graph(C)
+    return g
