@@ -256,6 +256,26 @@ def test_remove_edge(populated_graph):
     with pytest.raises(sn.GraphException):
         populated_graph.remove_edge('5f5f44ec7c0144e29c5b7d51deadbeef')
 
+def test_remove_edges(populated_digraph):
+    # remove the edges (a, b) and (a, c)
+    populated_digraph.remove_edges(['5f5f44ec7c0144e29c5b7d513f92d9ab', '7eb91be54d3746b89a61a282bcc207bb'])
+
+    correct_edges = {
+        uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'): {
+            "id": uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'),
+            "src": uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            "dst": uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            "type": "normal"
+        },
+        uuid.UUID('c172a3599b7d4ef3bbb688277276b763'): {
+            "id": uuid.UUID('c172a3599b7d4ef3bbb688277276b763'),
+            "src": uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            "dst": uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'),
+            "type": "irregular"
+        }
+    }
+    assert populated_digraph.get_edges() == correct_edges
+
 def test_remove_node(populated_graph):
     node_a_id = uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
     node_b_id = uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7')

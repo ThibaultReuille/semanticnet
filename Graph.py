@@ -236,6 +236,9 @@ class Graph(object):
         else:
             raise GraphException("Node ID not found.")
 
+    def remove_edges(self, ids):
+        map(self.remove_edge, ids)
+
     def set_node_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for node id_.'''
         id_ = self._extract_id(id_)
