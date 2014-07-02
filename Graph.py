@@ -288,6 +288,9 @@ class Graph(object):
         '''Returns all edges in the graph.'''
         return self._edges
 
+    def get_edge_ids(self):
+        return [ id_ for id_ in self._edges ]
+
     def get_edge(self, id_):
         '''Returns edge id_.'''
         id_ = self._extract_id(id_)

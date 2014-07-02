@@ -192,6 +192,14 @@ def test_get_edges(populated_graph):
     }
     assert populated_graph.get_edges() == output
 
+def test_get_edge_ids(populated_graph):
+    correct_edge_ids = [
+        uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb'),
+        uuid.UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab'),
+        uuid.UUID('c172a359-9b7d-4ef3-bbb6-88277276b763')
+    ]
+    assert populated_graph.get_edge_ids() == correct_edge_ids
+
 def test_get_node(populated_graph):
     assert (
         populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c') ==
