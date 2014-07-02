@@ -188,6 +188,9 @@ class Graph(object):
         else:
             raise GraphException("Node ID not found.")
 
+    def remove_nodes(self, ids):
+        map(self.remove_node, ids)
+
     def add_edge(self, src, dst, data={}, id_=None):
         '''Add an edge from src to dst, with an optional dict of attributes, data.
 

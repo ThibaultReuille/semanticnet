@@ -274,6 +274,19 @@ def test_remove_node(populated_graph):
     with pytest.raises(sn.GraphException):
         populated_graph.remove_node('3caaa8c09148493dbdf02c57deadbeef')
 
+def test_remove_nodes(populated_graph):
+    # remove A and B
+    populated_graph.remove_nodes(['3caaa8c09148493dbdf02c574b95526c', '2cdfebf3bf9547f19f0412ccdfbe03b7'])
+
+    # only C should remain
+    correct_nodes = {
+        uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'): {
+            "type": "C",
+            "id": uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+        }
+    }
+    assert populated_graph.get_nodes() == correct_nodes
+
 def test_remove_digraph_node(populated_digraph):
     node_a_id = uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
     node_b_id = uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7')
