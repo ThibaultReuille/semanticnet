@@ -61,6 +61,14 @@ def test_get_nodes(populated_graph):
     }
     assert populated_graph.get_nodes() == output
 
+def test_get_node_ids(populated_graph):
+    correct_output = [
+        uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+        uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+        uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2')
+    ]
+    assert populated_graph.get_node_ids() == correct_output
+
 def test_get_node_attribute(populated_graph):
     assert populated_graph.get_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'type') == 'A'
     assert populated_graph.get_node_attribute('2cdfebf3bf9547f19f0412ccdfbe03b7', 'type') == 'B'
