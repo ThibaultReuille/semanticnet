@@ -30,6 +30,11 @@ def test_add_node(graph):
     assert "type" in node
     assert node["type"] == "A"
 
+def test_has_node(populated_graph):
+    assert populated_graph.has_node('3caaa8c09148493dbdf02c574b95526c')
+    assert populated_graph.has_node('2cdfebf3bf9547f19f0412ccdfbe03b7')
+    assert populated_graph.has_node('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+
 def test_get_node(populated_graph):
     assert (
         populated_graph.get_node('3caaa8c09148493dbdf02c574b95526c') ==
@@ -38,11 +43,6 @@ def test_get_node(populated_graph):
             "id": uuid.UUID('3caaa8c09148493dbdf02c574b95526c')
         }
     )
-
-def test_has_node(populated_graph):
-    assert populated_graph.has_node('3caaa8c09148493dbdf02c574b95526c')
-    assert populated_graph.has_node('2cdfebf3bf9547f19f0412ccdfbe03b7')
-    assert populated_graph.has_node('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
 
 def test_get_nodes(populated_graph):
     output = {
