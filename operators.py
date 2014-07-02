@@ -1,45 +1,25 @@
-import networkx as nx
 import semanticnet as sn
 
-def _extract_networkx_graph(G):
-    mod = G.__module__.split('.')[0]
-    if mod == 'semanticnet':
-        return G.networkx_graph()
-    elif mod == 'networkx':
-        return G
-    else:
-        raise GraphException("Invalid graph object. Must be from networkx or semanticnet.")
+### Convenience lambdas ###
+def node_in(nid, G):
+    '''Returns true if the node n is in the graph G.'''
+    # G = _extract_networkx_graph(G)
+    return nid in G.get_node_ids()
 
-def difference(A, B):
+def edge_in(eid, G):
+    return eid in G.get_edge_ids()
+
+### Operators
+def difference(A, B, node_is_member=node_in, edge_is_member=edge_in):
     '''Returns a new graph which contains the nodes and edges in A, but not in B.'''
-    A = _extract_networkx_graph(A)
-    B = _extract_networkx_graph(B)
     C = A.copy()
-    C.remove_nodes_from(n for n in A.nodes() if n in B.nodes())
-    C.remove_edges_from(
-        (src, dst, key)
-        for src, dst in A.edges()
-        for key in A.edge[src][dst]
-        if (src, dst) in B.edges()
-            and key in B.edge[src][dst]
-    )
-    g = sn.Graph()
-    g.load_networkx_graph(C)
-    return g
+    C.remove_nodes(n for n in C.get_node_ids() if node_is_member(n, B))
+    C.remove_edges(e for e in C.get_edge_ids() if edge_is_member(e, B))
+    return C
 
-def intersection(A, B):
-    '''Returns a new graph which contains the ndoes and edges in both A and B.'''
-    A = _extract_networkx_graph(A)
-    B = _extract_networkx_graph(B)
+def intersection(A, B, node_is_member=node_in, edge_is_member=edge_in):
+    '''Returns a new graph which contains the nodes and edges in both A and B.'''
     C = A.copy()
-    C.remove_nodes_from(n for n in A.nodes() if n not in B.nodes())
-    C.remove_edges_from(
-        (src, dst, key)
-        for src, dst in A.edges()
-        for key in A.edge[src][dst]
-        if (src, dst) not in B.edges()
-            or key not in B.edge[src][dst]
-    )
-    g = sn.Graph()
-    g.load_networkx_graph(C)
-    return g
+    C.remove_nodes(n for n in C.get_node_ids() if not node_is_member(n, B))
+    C.remove_edges(e for e in C.get_edge_ids() if not edge_is_member(e, B))
+    return C
