@@ -174,3 +174,166 @@ def test_intersection(populated_digraph):
         }
     }
     assert I.get_edges() == correct_edges
+
+def test_union_disjoint(populated_digraph):
+    g1 = populated_digraph
+
+    g2 = sn.DiGraph()
+
+    a = g2.add_node({"label" : "A"}, 'a')
+    b = g2.add_node({"label" : "B"}, 'b')
+    c = g2.add_node({"label" : "C"}, 'c')
+
+    ab = g2.add_edge(a, b, {"type" : "belongs"}, 'belongs')
+    bc = g2.add_edge(b, c, {"type" : "owns"}, 'owns')
+    ca = g2.add_edge(c, a, {"type" : "has"}, 'has')
+
+    gu = sn.union(g1, g2)
+
+    correct_nodes = {
+        uuid.UUID('3caaa8c09148493dbdf02c574b95526c'): {
+            'id': uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            'type': 'A'
+        },
+        uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'): {
+            'id': uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            'type': 'B'
+        },
+        uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'): {
+            'id': uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'),
+            'type': 'C'
+        },
+        'a': {
+            'id': 'a',
+            'label': 'A'
+        },
+        'b': {
+            'id': 'b',
+            'label': 'B'
+        },
+        'c': {
+            'id': 'c',
+            'label': 'C'
+        }
+    }
+    assert gu.get_nodes() == correct_nodes
+
+    correct_edges = {
+        uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab'): {
+            'id': uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab'),
+            'src': uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            'dst': uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            'type': 'normal'
+        },
+        uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'): {
+            'id': uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'),
+            'src': uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            'dst': uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            'type': 'normal'
+        },
+        uuid.UUID('7eb91be54d3746b89a61a282bcc207bb'): {
+            'id': uuid.UUID('7eb91be54d3746b89a61a282bcc207bb'),
+            'src': uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            'dst': uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'),
+            'type': 'normal'
+        },
+        uuid.UUID('c172a3599b7d4ef3bbb688277276b763'): {
+            'id': uuid.UUID('c172a3599b7d4ef3bbb688277276b763'),
+            'src': uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            'dst': uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'),
+            'type': 'irregular'
+        },
+        ab: {
+            'id': ab,
+            'src': a,
+            'dst': b,
+            'type': 'belongs'
+        },
+        bc: {
+            'id': bc,
+            'src': b,
+            'dst': c,
+            'type': 'owns'
+        },
+        ca: {
+            'id': ca,
+            'src': c,
+            'dst': a,
+            'type': 'has'
+        }
+    }
+    assert gu.get_edges() == correct_edges
+
+def test_union_partial(populated_digraph):
+    g1 = populated_digraph
+    g2 = sn.DiGraph()
+    a = g2.add_node({"type": "A"}, '3caaa8c09148493dbdf02c574b95526c')
+    b = g2.add_node({"type": "B"}, '2cdfebf3bf9547f19f0412ccdfbe03b7')
+    d = g2.add_node({"type": "D"})
+    ab = g2.add_edge(a, b, {"type": "normal"}, '5f5f44ec7c0144e29c5b7d513f92d9ab')
+    bd = g2.add_edge(b, d, {"type": "irregular"})
+
+    gu = sn.union(g1, g2)
+
+    correct_nodes = {
+        a: {
+            'id': a,
+            'type': 'A'
+        },
+        b: {
+            'id': b,
+            'type': 'B'
+        },
+        uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'): {
+            'id': uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'),
+            'type': 'C'
+        },
+        d: {
+            'id': d,
+            'type': 'D'
+        }
+    }
+    assert gu.get_nodes() == correct_nodes
+
+    correct_edges = {
+        ab: {
+            'id': ab,
+            'src': a,
+            'dst': b,
+            'type': 'normal'
+        },
+        uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'): {
+            'id': uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'),
+            'src': b,
+            'dst': a,
+            'type': 'normal'
+        },
+        uuid.UUID('7eb91be54d3746b89a61a282bcc207bb'): {
+            'id': uuid.UUID('7eb91be54d3746b89a61a282bcc207bb'),
+            'src': a,
+            'dst': uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'),
+            'type': 'normal'
+        },
+        uuid.UUID('c172a3599b7d4ef3bbb688277276b763'): {
+            'id': uuid.UUID('c172a3599b7d4ef3bbb688277276b763'),
+            'src': uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            'dst': uuid.UUID('3cd197c2cf5e42dc9ccd0c2adcaf4bc2'),
+            'type': 'irregular'
+        },
+        bd: {
+            'id': bd,
+            'src': b,
+            'dst': d,
+            'type': 'irregular'
+        }
+    }
+    gu.get_nodes() == correct_nodes
+
+def test_union_idempotent(populated_digraph):
+    g1 = populated_digraph
+    g2 = g1.copy()
+    gu = sn.union(g1, g2)
+    assert gu.get_nodes() == g1.get_nodes()
+    assert gu.get_nodes() == g2.get_nodes()
+    assert gu.get_edges() == g1.get_edges()
+    assert gu.get_edges() == g2.get_edges()

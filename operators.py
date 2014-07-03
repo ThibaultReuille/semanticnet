@@ -45,3 +45,36 @@ def intersection(A, B, node_is_member=node_in, edge_is_member=edge_in):
     lambda id_, G: (expression which determines if the element id_ is "in" the graph G)
     '''
     return _inter(A, B, node_is_member, edge_is_member)
+
+def union(A, B, node_is_member=node_in, edge_is_member=edge_in):
+    '''Returns a new graph which contains the nodes and edges in EITHER A or B.
+
+    User may pass in a lambda which defines what it means for an element (node or edge)
+    to be a member of a graph. By default, it uses the unique IDs. The lambda must
+    be of the form:
+
+    lambda id_, G: (expression which determines if the element id_ is "in" the graph G)
+    '''
+    # copy A and B, and combine all their nodes and edges based on ID first, to create
+    # a universal set AB to use in building the union
+    AB = A.copy()
+    AB.add_nodes(dict((nid, attrs) for nid, attrs in B.get_nodes().items() if nid not in AB.get_node_ids()))
+    AB.add_edges(dict((eid, attrs) for eid, attrs in B.get_edges().items() if eid not in AB.get_edge_ids()))
+
+    # then use the universal set AB to build the union, based on the lambdas
+    C = type(AB)()
+    C.add_nodes(
+        dict(
+            (nid, attrs)
+            for nid, attrs in AB.get_nodes().items()
+            if node_is_member(nid, A) or node_is_member(nid, B)
+        )
+    )
+    C.add_edges(
+        dict(
+            (eid, attrs)
+            for eid, attrs in AB.get_edges().items()
+            if edge_is_member(eid, A) or edge_is_member(eid, B)
+        )
+    )
+    return C
