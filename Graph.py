@@ -172,6 +172,40 @@ class Graph(object):
         self._cache_new_node(data)
         return id_
 
+    def add_nodes(self, nodes):
+        '''Adds the nodes from the given parameter nodes, where nodes
+        is EITHER:
+
+        1. a dictionary that maps node IDs to attributes, e.g.:
+
+        {
+            uuid.UUID('3caaa8c09148493dbdf02c574b95526c'): {
+                'type': "A"
+            },
+            uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'): {
+                'type': "B"
+            },
+            etc...
+        }
+
+        OR
+
+        2. a list that contains the attributes of the nodes to add, e.g.
+
+        [ {'type': "A"}, {'type': "B"} ]
+
+        where with this option, the unique IDs will be generated automatically,
+        and it will return a list of the IDs in the respective order given.
+        '''
+        if type(nodes) is dict:
+            for id_, data in nodes.items():
+                self.add_node(data, id_)
+        elif type(nodes) is list:
+            ids = []
+            for data in nodes:
+                ids.append(self.add_node(data))
+            return ids
+
     def remove_node(self, id_):
         '''Removes node id_.'''
         id_ = self._extract_id(id_)

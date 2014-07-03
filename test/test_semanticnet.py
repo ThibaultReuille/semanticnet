@@ -30,6 +30,34 @@ def test_add_node(graph):
     assert "type" in node
     assert node["type"] == "A"
 
+def test_add_nodes():
+    dg = sn.DiGraph()
+    nodes = {
+        uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'): {
+            "id": uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'),
+            'type': 'B'
+        },
+        uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'): {
+            "id": uuid.UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'),
+            'type': 'A'
+        },
+        uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'): {
+            "id": uuid.UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'),
+            'type': 'C'
+        }
+    }
+    dg.add_nodes(nodes)
+    assert dg.get_nodes() == nodes
+
+    dg = sn.DiGraph()
+    nodes = [ {'type': 'A'}, {'type': 'B'}, {'type': 'C'} ]
+    ids = dg.add_nodes(nodes)
+
+    dg_nodes = dg.get_nodes()
+    assert dg_nodes[ids[0]]['type'] == 'A'
+    assert dg_nodes[ids[1]]['type'] == 'B'
+    assert dg_nodes[ids[2]]['type'] == 'C'
+
 def test_has_node(populated_graph):
     assert populated_graph.has_node('3caaa8c09148493dbdf02c574b95526c')
     assert populated_graph.has_node('2cdfebf3bf9547f19f0412ccdfbe03b7')
