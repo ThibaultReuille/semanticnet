@@ -259,6 +259,38 @@ class Graph(object):
         else:
             raise GraphException("Node ID not found.")
 
+    def add_edges(self, edges):
+        '''Adds the edges in the parameter edges, where edges is EITHER:
+
+        1. a list of triples of the form (src, dst, data) or (src, dst, data, id_),
+        where src and dst are the IDs of the nodes,
+        data is the dictionary of the edge's attributes,
+        and id_ is the unique ID of the edge, e.g.:
+
+        [ (<id of src>, <id of dst>, {'type': 'normal'}), etc... ] or
+        [ (<id of src>, <id of dst>, {'type': 'normal'}, <unique ID of edge>), etc... ]
+
+        The two different forms of tuples may be combined, if desired.
+
+        OR
+
+        2. a dictionary that maps edge IDs to their attributes, where attributes
+        MUST contain at least the two attributes 'src' and 'dst', which are the
+        unique IDs of the source and destination nodes, respectively.
+
+        WARNING: If either 'src' or 'dst' is missing from an edge's attributes,
+        it will be silently ignored!
+        '''
+        if type(edges) is list:
+            for tup in edges:
+                self.add_edge(*tup)
+        elif type(edges) is dict:
+            for id_, attrs in edges.items():
+                try:
+                    self.add_edge(attrs['src'], attrs['dst'], attrs, id_)
+                except KeyError:
+                    continue
+
     def remove_edge(self, id_):
         '''Removes edge id_.'''
         id_ = self._extract_id(id_)

@@ -147,6 +147,54 @@ def test_add_edge(graph):
     with pytest.raises(sn.GraphException):
         graph.add_edge(a, '3caaa8c09148493dbdf02c57deadbeef')
 
+def test_add_edges(populated_digraph):
+    g = sn.DiGraph()
+    g.add_nodes(populated_digraph.get_nodes())
+    edges = [
+        (
+            '3caaa8c09148493dbdf02c574b95526c',
+            '2cdfebf3bf9547f19f0412ccdfbe03b7',
+            {"type": "normal"},
+            '5f5f44ec7c0144e29c5b7d513f92d9ab'
+        ),
+        (
+            '2cdfebf3bf9547f19f0412ccdfbe03b7',
+            '3caaa8c09148493dbdf02c574b95526c',
+            {"type": "normal"},
+            'f3674fcc691848ebbd478b1bfb3e84c3'
+        ),
+        (
+            '3caaa8c09148493dbdf02c574b95526c',
+            '3cd197c2cf5e42dc9ccd0c2adcaf4bc2',
+            {"type": "normal"},
+            '7eb91be54d3746b89a61a282bcc207bb'
+        ),
+        (
+            '2cdfebf3bf9547f19f0412ccdfbe03b7',
+            '3cd197c2cf5e42dc9ccd0c2adcaf4bc2',
+            {"type": "irregular"},
+            'c172a3599b7d4ef3bbb688277276b763'
+        ),
+        # (b, c)
+        (
+            '3cd197c2cf5e42dc9ccd0c2adcaf4bc2',
+            '2cdfebf3bf9547f19f0412ccdfbe03b7',
+            {"type": "irregular"}
+        )
+    ]
+    g.add_edges(edges)
+    for eid in populated_digraph.get_edges():
+        assert eid in g.get_edges()
+    assert g.get_edges_between('3cd197c2cf5e42dc9ccd0c2adcaf4bc2', '2cdfebf3bf9547f19f0412ccdfbe03b7')
+
+    g = sn.DiGraph()
+    g.add_node({"type": "A"}, '3caaa8c09148493dbdf02c574b95526c')
+    g.add_node({"type": "B"}, '2cdfebf3bf9547f19f0412ccdfbe03b7')
+    g.add_node({"type": "C"}, '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
+    edges = populated_digraph.get_edges()
+    g.add_edges(edges)
+    assert g.get_edges() == populated_digraph.get_edges()
+
 def test_get_edge(populated_graph):
     assert ( populated_graph.get_edge('7eb91be5-4d37-46b8-9a61-a282bcc207bb') ==
         {
