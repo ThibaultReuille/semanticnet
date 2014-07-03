@@ -366,12 +366,19 @@ class Graph(object):
             raise GraphException('Node ID not found.')
 
     def get_edges_between(self, src, dst):
-        '''Returns all edges between src and dst'''
+        '''Returns all edges between src and dst and between dst and src'''
         src = self._extract_id(src)
         dst = self._extract_id(dst)
-        if self._g.has_node(src) and self._g.has_node(dst) and self._g.has_edge(src, dst):
-            return self._g.edge[src][dst]
-        return {}
+        edges_src_dst = {}
+        if self._g.has_node(src) and self._g.has_node(dst):
+            if self._g.has_edge(src, dst):
+                edges_src_dst = dict(edges_src_dst.items() + self._g.edge[src][dst].items())
+
+            # for DiGraphs, add edges in the other direction too
+            if type(self) is not Graph and self._g.has_edge(dst, src):
+                edges_src_dst = dict(edges_src_dst.items() + self._g.edge[dst][src].items())
+
+        return edges_src_dst
 
     def has_edge(self, id_):
         id_ = self._extract_id(id_)

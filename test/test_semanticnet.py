@@ -245,6 +245,27 @@ def test_get_edges_between(populated_graph):
             '261b076580434c299361f4a3c05db55d')
     )
 
+def test_get_edges_between_digraph(populated_digraph):
+    edges_a_b = populated_digraph.get_edges_between('3caaa8c09148493dbdf02c574b95526c',
+        '2cdfebf3bf9547f19f0412ccdfbe03b7')
+
+    # for digraphs, should return all edges in both directions
+    correct_edges = {
+        uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab'): {
+            "id": uuid.UUID('5f5f44ec7c0144e29c5b7d513f92d9ab'),
+            "src": uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            "dst": uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            "type": "normal"
+        },
+        uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'): {
+            "id": uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'),
+            "src": uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
+            "dst": uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
+            "type": "normal"
+        }
+    }
+    assert edges_a_b == correct_edges
+
 def test_get_edges(populated_graph):
     output = {
         uuid.UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb'): {
