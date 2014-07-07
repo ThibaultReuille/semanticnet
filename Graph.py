@@ -555,28 +555,32 @@ class Graph(object):
             graph["timeline"] = [ [c.timecode, c.name, c.attributes] for c in self.timeline ]
             json.dump(graph, outfile, indent=True)
 
-    def load_json(self, filename):
-        '''Generates a graph from the JSON file filename.'''
-        with open(filename, 'r') as infile:
-            graph = json.load(infile)
-            self.meta = graph["meta"]
-            self.timeline = graph["timeline"]
+    def load_json(self, j):
+        '''Generates a graph from the given JSON file j. j may be the filename string, or a JSON object.'''
+        if type(j) is str:
+            jfile = open(j, 'r')
+            graph = json.load(jfile)
+        else:
+            graph = j
 
-            for node in graph["nodes"]:
-                self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+        self.meta = graph["meta"]
+        self.timeline = graph["timeline"]
 
-            for edge in graph["edges"]:
-                src = self._extract_id(edge["src"])
-                dst = self._extract_id(edge["dst"])
-                id_ = self._extract_id(edge["id"]) if edge["id"] != None else self._create_uuid()
-                self.add_edge(
-                    src,
-                    dst,
-                    dict([item for item in edge.items()
-                            if (item[0] != "src" and item[0] != "dst" and item[0] != "id")] ),
-                    id_
-                )
-                self._g.edge[src][dst][id_]["id"] = id_
+        for node in graph["nodes"]:
+            self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+
+        for edge in graph["edges"]:
+            src = self._extract_id(edge["src"])
+            dst = self._extract_id(edge["dst"])
+            id_ = self._extract_id(edge["id"]) if edge["id"] != None else self._create_uuid()
+            self.add_edge(
+                src,
+                dst,
+                dict([item for item in edge.items()
+                        if (item[0] != "src" and item[0] != "dst" and item[0] != "id")] ),
+                id_
+            )
+            self._g.edge[src][dst][id_]["id"] = id_
 
     def copy(self):
         return copy.deepcopy(self)

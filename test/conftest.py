@@ -98,16 +98,20 @@ def test_output():
     return jsonObj
 
 @pytest.fixture
-def correct_output():
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json")) as f:
+def correct_output_filename():
+    return "test_output_correct.json"
+
+@pytest.fixture
+def correct_output(correct_output_filename):
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), correct_output_filename)) as f:
         jsonObj = json.load(f)
 
     return jsonObj
 
 @pytest.fixture
-def correct_output_graph():
+def correct_output_graph(correct_output_filename):
     g = sn.Graph()
-    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json"))
+    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), correct_output_filename))
     return g
 
 @pytest.fixture

@@ -508,6 +508,11 @@ def test_load_json(correct_output_graph):
 
     assert correct_output_graph.get_edges() == edges
 
+def test_load_json_with_object(correct_output):
+    g = sn.Graph()
+    g.load_json(correct_output) # load graph with json object, instead of string
+    test_load_json(g)
+
 def test_load_json_plaintext(correct_output_graph_plaintext_from_file):
     nodes = {
         'a': {'label': 'A'},
