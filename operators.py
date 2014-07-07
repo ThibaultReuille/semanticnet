@@ -4,10 +4,10 @@ import semanticnet as sn
 def node_in(nid, G):
     '''Returns true if the node n is in the graph G.'''
     # G = _extract_networkx_graph(G)
-    return nid in G.get_node_ids()
+    return G._g.has_node(nid)
 
 def edge_in(eid, G):
-    return eid in G.get_edge_ids()
+    return eid in G.get_edges()
 
 ### Operators
 def _inter(A, B, node_cond, edge_cond):
@@ -59,7 +59,7 @@ def union(A, B, node_is_member=node_in, edge_is_member=edge_in):
     # a universal set AB to use in building the union
     AB = A.copy()
     AB.add_nodes(dict((nid, attrs) for nid, attrs in B.get_nodes().items() if nid not in AB.get_node_ids()))
-    AB.add_edges(dict((eid, attrs) for eid, attrs in B.get_edges().items() if eid not in AB.get_edge_ids()))
+    AB.add_edges(dict((eid, attrs) for eid, attrs in B.get_edges().items() if eid not in AB.get_edges()))
 
     # then use the universal set AB to build the union, based on the lambdas
     C = type(AB)()

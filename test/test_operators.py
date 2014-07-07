@@ -6,7 +6,8 @@ def test_difference(populated_digraph):
     A = populated_digraph
     B = populated_digraph.copy()
 
-    B.remove_node('3cd197c2cf5e42dc9ccd0c2adcaf4bc2') # remove node C
+    # remove node C. Consequently, also removes edges (A, C) and (B, C)
+    B.remove_node('3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
     d = B.add_node({"type": "D"}, 'da30015efe3c44dbb0b3b3862cef704a') # add another node D
     B.add_edge(d, '3caaa8c09148493dbdf02c574b95526c') # add an edge from D to A
 
