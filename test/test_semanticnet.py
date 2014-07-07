@@ -444,7 +444,7 @@ def test_remove_digraph_node(populated_digraph):
     assert edge_a_c_id not in edges
     assert edge_b_c_id in edges
 
-def test_save_json(test_output, correct_output):
+def test_save_json(fixture_dir, test_output, correct_output):
     assert test_output["timeline"] == correct_output["timeline"]
     assert test_output["meta"] == correct_output["meta"]
 
@@ -459,7 +459,7 @@ def test_save_json(test_output, correct_output):
             edge["src"], edge["dst"] = edge["dst"], edge["src"]
             assert edge in correct_output["edges"]
 
-    os.remove("test_output.json")
+    os.remove(os.path.join(fixture_dir, "test_output.json"))
 
 def test_save_json_plaintext(test_output_plaintext, test_output_plaintext_correct):
     assert test_output_plaintext["timeline"] == test_output_plaintext_correct["timeline"]

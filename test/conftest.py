@@ -6,6 +6,10 @@ import networkx as nx
 import uuid
 
 @pytest.fixture
+def fixture_dir():
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures")
+
+@pytest.fixture
 def uuid_str():
     return '3caaa8c09148493dbdf02c574b95526c'
 
@@ -55,31 +59,31 @@ def correct_output_graph_plaintext():
     return graph
 
 @pytest.fixture
-def correct_output_graph_plaintext_from_file():
+def correct_output_graph_plaintext_from_file(fixture_dir):
     g = sn.Graph()
-    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct_plaintext.json"))
+    g.load_json(os.path.join(fixture_dir, "test_output_correct_plaintext.json"))
     return g
 
 @pytest.fixture
-def test_output_plaintext(correct_output_graph_plaintext):
-    correct_output_graph_plaintext.save_json("test_output_plaintext.json")
+def test_output_plaintext(correct_output_graph_plaintext, fixture_dir):
+    correct_output_graph_plaintext.save_json(os.path.join(fixture_dir, "test_output_plaintext.json"))
 
-    with open("test_output_plaintext.json") as f:
+    with open(os.path.join(fixture_dir, "test_output_plaintext.json")) as f:
         jsonObj = json.load(f)
 
-    os.remove("test_output_plaintext.json")
+    os.remove(os.path.join(fixture_dir, "test_output_plaintext.json"))
 
     return jsonObj
 
 @pytest.fixture
-def test_output_plaintext_correct():
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct_plaintext.json")) as f:
+def test_output_plaintext_correct(fixture_dir):
+    with open(os.path.join(fixture_dir, "test_output_correct_plaintext.json")) as f:
         jsonObj = json.load(f)
 
     return jsonObj
 
 @pytest.fixture
-def test_output():
+def test_output(fixture_dir):
     graph = sn.Graph()
 
     a = graph.add_node({"label" : "A"}, '6cf546f71efe47578f7a1400871ef6b8')
@@ -90,9 +94,9 @@ def test_output():
     graph.add_edge(b, c, {"type" : "owns"}, '081369f6197b467abe97b3efe8cc4640')
     graph.add_edge(c, a, {"type" : "has"}, 'b3a245098d5d482f893c6d63606c7e91')
 
-    graph.save_json("test_output.json")
+    graph.save_json(os.path.join(fixture_dir, "test_output.json"))
 
-    with open("test_output.json") as f:
+    with open(os.path.join(fixture_dir, "test_output.json")) as f:
         jsonObj = json.load(f)
 
     return jsonObj
@@ -102,16 +106,16 @@ def correct_output_filename():
     return "test_output_correct.json"
 
 @pytest.fixture
-def correct_output(correct_output_filename):
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), correct_output_filename)) as f:
+def correct_output(fixture_dir, correct_output_filename):
+    with open(os.path.join(fixture_dir, correct_output_filename)) as f:
         jsonObj = json.load(f)
 
     return jsonObj
 
 @pytest.fixture
-def correct_output_graph(correct_output_filename):
+def correct_output_graph(fixture_dir, correct_output_filename):
     g = sn.Graph()
-    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), correct_output_filename))
+    g.load_json(os.path.join(fixture_dir, correct_output_filename))
     return g
 
 @pytest.fixture
