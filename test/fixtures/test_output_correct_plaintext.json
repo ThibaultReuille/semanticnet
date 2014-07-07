@@ -1,0 +1,38 @@
+{
+ "timeline": [], 
+ "nodes": [
+  {
+   "id": "c", 
+   "label": "C"
+  }, 
+  {
+   "id": "b", 
+   "label": "B"
+  }, 
+  {
+   "id": "a", 
+   "label": "A"
+  }
+ ], 
+ "meta": {}, 
+ "edges": [
+  {
+   "src": "c",
+   "dst": "a",
+   "type": "has",
+   "id": "has"
+  }, 
+  {
+   "src": "b",
+   "dst": "c",
+   "type": "owns",
+   "id": "owns"
+  }, 
+  {
+   "src": "a",
+   "dst": "b",
+   "type": "belongs",
+   "id": "belongs"
+  }
+ ]
+}

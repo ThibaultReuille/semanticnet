@@ -172,6 +172,40 @@ class Graph(object):
         self._cache_new_node(data)
         return id_
 
+    def add_nodes(self, nodes):
+        '''Adds the nodes from the given parameter nodes, where nodes
+        is EITHER:
+
+        1. a dictionary that maps node IDs to attributes, e.g.:
+
+        {
+            uuid.UUID('3caaa8c09148493dbdf02c574b95526c'): {
+                'type': "A"
+            },
+            uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'): {
+                'type': "B"
+            },
+            etc...
+        }
+
+        OR
+
+        2. a list that contains the attributes of the nodes to add, e.g.
+
+        [ {'type': "A"}, {'type': "B"} ]
+
+        where with this option, the unique IDs will be generated automatically,
+        and it will return a list of the IDs in the respective order given.
+        '''
+        if type(nodes) is dict:
+            for id_, data in nodes.items():
+                self.add_node(data, id_)
+        elif type(nodes) is list:
+            ids = []
+            for data in nodes:
+                ids.append(self.add_node(data))
+            return ids
+
     def remove_node(self, id_):
         '''Removes node id_.'''
         id_ = self._extract_id(id_)
@@ -187,6 +221,9 @@ class Graph(object):
             self._g.remove_node(id_)
         else:
             raise GraphException("Node ID not found.")
+
+    def remove_nodes(self, ids):
+        map(self.remove_node, ids)
 
     def add_edge(self, src, dst, data={}, id_=None):
         '''Add an edge from src to dst, with an optional dict of attributes, data.
@@ -222,6 +259,38 @@ class Graph(object):
         else:
             raise GraphException("Node ID not found.")
 
+    def add_edges(self, edges):
+        '''Adds the edges in the parameter edges, where edges is EITHER:
+
+        1. a list of triples of the form (src, dst, data) or (src, dst, data, id_),
+        where src and dst are the IDs of the nodes,
+        data is the dictionary of the edge's attributes,
+        and id_ is the unique ID of the edge, e.g.:
+
+        [ (<id of src>, <id of dst>, {'type': 'normal'}), etc... ] or
+        [ (<id of src>, <id of dst>, {'type': 'normal'}, <unique ID of edge>), etc... ]
+
+        The two different forms of tuples may be combined, if desired.
+
+        OR
+
+        2. a dictionary that maps edge IDs to their attributes, where attributes
+        MUST contain at least the two attributes 'src' and 'dst', which are the
+        unique IDs of the source and destination nodes, respectively.
+
+        WARNING: If either 'src' or 'dst' is missing from an edge's attributes,
+        it will be silently ignored!
+        '''
+        if type(edges) is list:
+            for tup in edges:
+                self.add_edge(*tup)
+        elif type(edges) is dict:
+            for id_, attrs in edges.items():
+                try:
+                    self.add_edge(attrs['src'], attrs['dst'], attrs, id_)
+                except KeyError:
+                    continue
+
     def remove_edge(self, id_):
         '''Removes edge id_.'''
         id_ = self._extract_id(id_)
@@ -232,6 +301,9 @@ class Graph(object):
             del self._edges[id_]
         else:
             raise GraphException("Node ID not found.")
+
+    def remove_edges(self, ids):
+        map(self.remove_edge, ids)
 
     def set_node_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for node id_.'''
@@ -249,6 +321,10 @@ class Graph(object):
     def get_nodes(self):
         '''Returns a list of all nodes in the graph.'''
         return dict([ (id_, self._g.node[id_]) for id_ in self._g.nodes() ])
+
+    def get_node_ids(self):
+        '''Returns a list of the IDs of all nodes in the graph.'''
+        return self._g.nodes()
 
     def get_node(self, id_):
         id_ = self._extract_id(id_)
@@ -278,6 +354,9 @@ class Graph(object):
         '''Returns all edges in the graph.'''
         return self._edges
 
+    def get_edge_ids(self):
+        return [ id_ for id_ in self._edges ]
+
     def get_edge(self, id_):
         '''Returns edge id_.'''
         id_ = self._extract_id(id_)
@@ -287,12 +366,19 @@ class Graph(object):
             raise GraphException('Node ID not found.')
 
     def get_edges_between(self, src, dst):
-        '''Returns all edges between src and dst'''
+        '''Returns all edges between src and dst and between dst and src'''
         src = self._extract_id(src)
         dst = self._extract_id(dst)
-        if self._g.has_node(src) and self._g.has_node(dst) and self._g.has_edge(src, dst):
-            return self._g.edge[src][dst]
-        return {}
+        edges_src_dst = {}
+        if self._g.has_node(src) and self._g.has_node(dst):
+            if self._g.has_edge(src, dst):
+                edges_src_dst = dict(edges_src_dst.items() + self._g.edge[src][dst].items())
+
+            # for DiGraphs, add edges in the other direction too
+            if type(self) is not Graph and self._g.has_edge(dst, src):
+                edges_src_dst = dict(edges_src_dst.items() + self._g.edge[dst][src].items())
+
+        return edges_src_dst
 
     def has_edge(self, id_):
         id_ = self._extract_id(id_)
@@ -469,28 +555,35 @@ class Graph(object):
             graph["timeline"] = [ [c.timecode, c.name, c.attributes] for c in self.timeline ]
             json.dump(graph, outfile, indent=True)
 
-    def load_json(self, filename):
-        '''Generates a graph from the JSON file filename.'''
-        with open(filename, 'r') as infile:
-            graph = json.load(infile)
-            self.meta = graph["meta"]
-            self.timeline = graph["timeline"]
+    def load_json(self, j):
+        '''Generates a graph from the given JSON file j. j may be the filename string, or a JSON object.'''
+        if type(j) is str:
+            jfile = open(j, 'r')
+            graph = json.load(jfile)
+        else:
+            graph = j
 
-            for node in graph["nodes"]:
-                self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+        self.meta = graph["meta"]
+        self.timeline = graph["timeline"]
 
-            for edge in graph["edges"]:
-                src = self._extract_id(edge["src"])
-                dst = self._extract_id(edge["dst"])
-                id_ = self._extract_id(edge["id"]) if edge["id"] != None else self._create_uuid()
-                self.add_edge(
-                    src,
-                    dst,
-                    dict([item for item in edge.items()
-                            if (item[0] != "src" and item[0] != "dst" and item[0] != "id")] ),
-                    id_
-                )
-                self._g.edge[src][dst][id_]["id"] = id_
+        for node in graph["nodes"]:
+            self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+
+        for edge in graph["edges"]:
+            src = self._extract_id(edge["src"])
+            dst = self._extract_id(edge["dst"])
+            id_ = self._extract_id(edge["id"]) if edge["id"] != None else self._create_uuid()
+            self.add_edge(
+                src,
+                dst,
+                dict([item for item in edge.items()
+                        if (item[0] != "src" and item[0] != "dst" and item[0] != "id")] ),
+                id_
+            )
+            self._g.edge[src][dst][id_]["id"] = id_
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def _check_key_presence(self, d, key, val):
         try:
