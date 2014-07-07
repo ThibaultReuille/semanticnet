@@ -112,12 +112,12 @@ One example log is included, which was parsed from a packet capture on http://ma
 
 ```sh
 $ cd examples
-$ ./bro_graph.py ./http.log
-Opening ./http.log
+$ ./bro_graph.py ./sample/http.log
+Opening ./sample/http.log
 Building graph...
-Writing results to ./http.json
+Writing results to ./sample/http.json
 cd /path/to/Visualization/graphiti
-./graphiti demo /path/to/semanticnet/examples/http.json
+./graphiti demo /path/to/semanticnet/examples/sample/http.json
 ```
 
 To build a graph from your own packet capture, you simply run `tcpdump` and parse it with `bro`:
