@@ -11,6 +11,7 @@ def test_diff(populated_digraph):
 
     node_d = B.add_node({"type": "D"}, 'da30015efe3c44dbb0b3b3862cef704a') # add a new node of type D
     da = B.add_edge(node_d, '3caaa8c09148493dbdf02c574b95526c', {"type": "irregular"}) # add an edge from D to A
+    B.remove_edge('5f5f44ec7c0144e29c5b7d513f92d9ab') # remove (A, B)
 
     D = sn.diff(A, B) # compute the diff graph D
 
@@ -45,7 +46,7 @@ def test_diff(populated_digraph):
             'src': uuid.UUID('3caaa8c09148493dbdf02c574b95526c'),
             'dst': uuid.UUID('2cdfebf3bf9547f19f0412ccdfbe03b7'),
             'type': 'normal',
-            'diffstatus': 'same'
+            'diffstatus': 'removed'
         },
         # (B, A)
         uuid.UUID('f3674fcc691848ebbd478b1bfb3e84c3'): {
