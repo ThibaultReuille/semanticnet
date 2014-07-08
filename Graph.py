@@ -319,7 +319,7 @@ class Graph(object):
             raise GraphException("Node id not found, can't set attribute.")
 
     def get_nodes(self):
-        '''Returns a list of all nodes in the graph.'''
+        '''Returns a dict of all nodes in the graph, keyed by their unique ID.'''
         return dict([ (id_, self._g.node[id_]) for id_ in self._g.nodes() ])
 
     def get_node_ids(self):
