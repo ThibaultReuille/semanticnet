@@ -67,7 +67,9 @@ As you can see, there is a list of `"node"` objects, each of which contain the n
 as well as a list of `"edge"` objects, each of which have the edge's attributes, and the fields `"src"` and `"dst"`,
 which indicate the source and destination vertices, respectively.
 
-In actuality, the `"id"` fields will be [UUIDs](http://en.wikipedia.org/wiki/Globally_unique_identifier).
+Without user definition, the `"id"` fields will default to randomly-generated
+[UUIDs](http://en.wikipedia.org/wiki/Globally_unique_identifier),
+although they can be any hashable type.
 
 ## Examples
 Included in this repo are several example scripts to demonstrate usage of SemanticNet. These are the
