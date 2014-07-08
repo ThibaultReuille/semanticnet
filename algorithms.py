@@ -14,19 +14,19 @@ def _mark_incident_edges_as(U, G, status):
 
 def _mark_nodes_edges_as(U, G, status):
     map(lambda nid: U.set_node_attribute(nid, 'diffstatus', status), G.get_node_ids())
-    map(lambda eid: U.set_edge_attribute(eid, 'diffstatus', status), G.get_edge_ids())
+    map(lambda eid: U.set_edge_attribute(eid, 'diffstatus', status), G.get_edges())
 
 # I is the graph of nodes/edges which are in both A and B
 def _check_changed_edges(A, B, AB, I):
     # Go through the remaining edges that haven't been marked with a 'diffstatus'.
     # These are edges that are incident on, to, or from two nodes which are in
     # both A and B
-    for eid in [ eid for eid, attrs in AB.get_edges().items() if 'diffstatus' not in attrs ]:
+    for eid in [ eid for eid, attrs in AB.get_edges().iteritems() if 'diffstatus' not in attrs ]:
         # removed edges
-        if eid in A.get_edge_ids() and eid not in B.get_edge_ids():
+        if eid in A.get_edges() and eid not in B.get_edges():
             AB.set_edge_attribute(eid, 'diffstatus', 'removed')
         # added edges
-        elif eid in B.get_edge_ids() and eid not in A.get_edge_ids():
+        elif eid in B.get_edges() and eid not in A.get_edges():
             AB.set_edge_attribute(eid, 'diffstatus', 'added')
 
 def diff(A, B):

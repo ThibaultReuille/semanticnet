@@ -58,8 +58,8 @@ def union(A, B, node_is_member=node_in, edge_is_member=edge_in):
     # copy A and B, and combine all their nodes and edges based on ID first, to create
     # a universal set AB to use in building the union
     AB = A.copy()
-    AB.add_nodes(dict((nid, attrs) for nid, attrs in B.get_nodes().items() if nid not in AB.get_node_ids()))
-    AB.add_edges(dict((eid, attrs) for eid, attrs in B.get_edges().items() if eid not in AB.get_edges()))
+    AB.add_nodes(dict((nid, attrs) for nid, attrs in B.get_nodes().iteritems() if nid not in AB.get_node_ids()))
+    AB.add_edges(dict((eid, attrs) for eid, attrs in B.get_edges().iteritems() if eid not in AB.get_edges()))
 
     # then use the universal set AB to build the union, based on the lambdas
     C = type(AB)()
