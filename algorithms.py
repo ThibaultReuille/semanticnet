@@ -35,12 +35,15 @@ def diff(A, B):
     removed, added, and remain the same in B.
 
     Specifically, it returns A ∪ B, such that:
-    1. Nodes in A - B marked with the "diffstatus" attribute as "removed"
-    2. Nodes in B - A marked with the "diffstatus" attribute as "added"
-    3. Nodes in A ∩ B marked with the "diffstatus" attribute as "same"
+    1. Nodes in A - B are given the "diffstatus" attribute "removed"
+    2. Nodes in B - A are given the "diffstatus" attribute "added"
+    3. Nodes in A ∩ B are given the "diffstatus" attribute "same"
 
     Notice that the union of 1 - 3 equals A ∪ B.
 
+    WARNING: Currently, this method only works if both A and B were generated with unique IDs in a
+    deterministic fashion; i.e., two identical nodes are given the same ID at both points in time.
+    This means that diff() will not work on graphs which were generated with automatic random UUIDs.
     '''
     # must take their union first, then mark appropriate nodes/edges
     AB = sn.union(A, B)
