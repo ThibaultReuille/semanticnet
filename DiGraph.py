@@ -3,9 +3,12 @@ from semanticnet import Graph
 
 class DiGraph(Graph):
 
-    def __init__(self, verbose=False):
-        super(DiGraph, self).__init__()
+    def __init__(self, verbose=False, json_file=""):
+        # don't pass in json_file so it doesn't call load_json() twice
+        super(DiGraph, self).__init__(verbose, "")
         self._g = nx.MultiDiGraph()
+        if json_file:
+            self.load_json(json_file)
 
     def remove_node(self, id_):
         '''Removes node id_.'''

@@ -4,6 +4,12 @@ import semanticnet as sn
 import time
 import uuid
 
+def test_json_constructor(fixture_dir, correct_output_filename, correct_output_graph):
+    print("Path: {}".format(os.path.join(fixture_dir, correct_output_filename)))
+    g = sn.DiGraph(json_file=os.path.join(fixture_dir, correct_output_filename))
+    assert g.get_nodes() == correct_output_graph.get_nodes()
+    assert g.get_edges() == correct_output_graph.get_edges()
+
 def test__create_uuid(graph):
     id_ = graph._create_uuid()
     assert id_.__class__.__name__ == 'UUID'

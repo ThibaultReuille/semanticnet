@@ -29,7 +29,7 @@ class CacheMeta(object):
 class Graph(object):
     '''A simple Graph structure which lets you focus on the data.'''
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, json_file=""):
         self._g = nx.MultiGraph()
         self._edges = {}
 
@@ -45,6 +45,9 @@ class Graph(object):
 
         self.verbose = verbose
         self.attr_reserved = ["id", "src", "dst"]
+
+        if json_file:
+            self.load_json(json_file)
 
     def _create_uuid(self):
         '''Create a random UUID for a new node or edge. Checks for collisions.'''
