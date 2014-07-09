@@ -29,7 +29,35 @@ def _check_changed_edges(A, B, AB, I):
         elif eid in B.get_edges() and eid not in A.get_edges():
             AB.set_edge_attribute(eid, 'diffstatus', 'added')
 
-def diff(A, B):
+def _clear_clutter(U):
+    '''For directed graphs, clears up some clutter, so only relevant unchanged nodes/edges
+    remain in the graph.
+    '''
+    # if type(U) is not sn.DiGraph:
+    #     return U
+
+    same = [n for n, attrs in U.get_nodes().iteritems() if attrs['diffstatus'] == 'same']
+    for n in same:
+        # get the list of edges incident to or from this node
+        successors = U._g.neighbors(n)
+        predecessors = U._g.predecessors(n) if type(U) is sn.DiGraph else []
+        edges = {}
+        map(lambda adj: edges.update(U.get_edges_between(n, adj)), successors + predecessors)
+
+        # a node is "relevant" if any of its incident edges has been changed, OR
+        # it is connected to a changed node AND has an in-degree > 0
+        changed = [
+            # the edge itself has been changed, or
+            attrs['diffstatus'] != 'same' or
+                # it is connected to a changed node
+                U.get_node_attribute(attrs['dst'], 'diffstatus') != 'same' or
+                U.get_node_attribute(attrs['src'], 'diffstatus') != 'same'
+            for e, attrs in edges.iteritems()
+        ]
+        if not any(changed):
+            U.remove_node(n)
+
+def diff(A, B, context=False):
     '''Given two graphs A and B, where it is generally assumed that B is a "newer" version of A,
     returns a new graph which captures information about which nodes and edges of A were
     removed, added, and remain the same in B.
@@ -61,5 +89,9 @@ def diff(A, B):
     same = sn.intersection(B, A)
     _mark_nodes_edges_as(AB, same, 'same')
     _check_changed_edges(A, B, AB, same)
+
+    if context:
+        # return clear_clutter(AB)
+        _clear_clutter(AB)
 
     return AB
