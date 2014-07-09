@@ -24,6 +24,8 @@ if __name__ == "__main__":
     parser.add_argument('-a', '--attr', type=str,
         help="If you used an attribute to identify nodes and edges, pass the attribute here.")
     parser.add_argument('-o', '--outfile', type=str, help="Output file path")
+    parser.add_argument('-c', '--context', action="store_true", default=False,
+        help="Only keep relevant unchanged nodes/edges. Cleans up clutter.")
     parser.add_argument('old_graph', type=str)
     parser.add_argument('new_graph', type=str)
     args = parser.parse_args()
@@ -49,7 +51,7 @@ if __name__ == "__main__":
     B = sn.DiGraph()
     B.load_json(b_obj)
     print("Performing diff...\n")
-    D = sn.diff(A, B)
+    D = sn.diff(A, B, True)
     print("Nodes added: {}".format(len([n for n, attrs in D.get_nodes().items() if attrs['diffstatus'] == 'added'])))
     print("Nodes removed: {}".format(len([n for n, attrs in D.get_nodes().items() if attrs['diffstatus'] == 'removed'])))
     print("Edges added: {}".format(len([e for e, attrs in D.get_edges().items() if attrs['diffstatus'] == 'added'])))
