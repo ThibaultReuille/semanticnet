@@ -135,6 +135,21 @@ def test_neighbors(populated_digraph):
    }
    assert neighbors == correct_neighbors
 
+def test_predecessors(populated_digraph):
+   predecessors = populated_digraph.predecessors(uuid.UUID( '3cd197c2cf5e42dc9ccd0c2adcaf4bc2') )
+   correct_predecessors = {
+           uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ): {
+               'id': uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ),
+               'type': 'B',
+           },
+           uuid.UUID( '3caaa8c09148493dbdf02c574b95526c' ): {
+               'id': uuid.UUID( '3caaa8c09148493dbdf02c574b95526c' ),
+               'type': 'A',
+           }
+   }
+   assert predecessors == correct_predecessors
+    
+
 def test_set_node_attribute(populated_graph):
     populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth', 5)
     assert populated_graph.get_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth') == 5

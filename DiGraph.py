@@ -28,3 +28,7 @@ class DiGraph(Graph):
             self._g.remove_node(id_)
         else:
             raise GraphException("Node ID not found.")
+
+    def predecessors(self, id_):
+        return dict([(nid, self.get_node(nid)) for nid in self._g.predecessors(id_)])
+
