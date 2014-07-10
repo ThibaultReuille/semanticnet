@@ -91,7 +91,6 @@ def diff(A, B, context=False):
     _check_changed_edges(A, B, AB, same)
 
     if context:
-        # return clear_clutter(AB)
         _clear_clutter(AB)
 
     return AB

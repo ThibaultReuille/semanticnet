@@ -534,6 +534,9 @@ class Graph(object):
         '''
         return self._get_items_by_attr("edge", attr, val, nosingleton)
 
+    def neighbors(self, id_):
+        return dict([(nid, self.get_node(nid)) for nid in self._g.neighbors(id_)])
+
     def _get_export_id_str(self, id_):
         if id_.__class__.__name__ == "UUID":
             return id_.hex

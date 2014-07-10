@@ -121,6 +121,20 @@ def test_get_node_attributes(populated_graph):
     with pytest.raises(sn.GraphException):
         populated_graph.get_node_attributes('3caaa8c09148493dbdf02c57deadbeef')
 
+def test_neighbors(populated_digraph):
+   neighbors = populated_digraph.neighbors(uuid.UUID( '3caaa8c09148493dbdf02c574b95526c') )
+   correct_neighbors = {
+           uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ): {
+               'id': uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ),
+               'type': 'B',
+           },
+           uuid.UUID( '3cd197c2cf5e42dc9ccd0c2adcaf4bc2' ): {
+               'id': uuid.UUID( '3cd197c2cf5e42dc9ccd0c2adcaf4bc2' ),
+               'type': 'C',
+           }
+   }
+   assert neighbors == correct_neighbors
+
 def test_set_node_attribute(populated_graph):
     populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth', 5)
     assert populated_graph.get_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth') == 5
