@@ -148,7 +148,6 @@ def test_predecessors(populated_digraph):
            }
    }
    assert predecessors == correct_predecessors
-    
 
 def test_set_node_attribute(populated_graph):
     populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth', 5)
@@ -513,9 +512,18 @@ def test_save_json_plaintext(test_output_plaintext, test_output_plaintext_correc
 
 def test_load_json(correct_output_graph):
     nodes = {
-        uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'): {'label': 'A'},
-        uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'): {'label': 'B'},
-        uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'): {'label': 'C'}
+        uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'): {
+            'id': uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'),
+            'label': 'A'
+        },
+        uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'): {
+            'id': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
+            'label': 'B'
+        },
+        uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'): {
+            'id': uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'),
+            'label': 'C'
+        }
     }
 
     assert correct_output_graph.get_nodes() == nodes
@@ -550,9 +558,18 @@ def test_load_json_with_object(correct_output):
 
 def test_load_json_plaintext(correct_output_graph_plaintext_from_file):
     nodes = {
-        'a': {'label': 'A'},
-        'b': {'label': 'B'},
-        'c': {'label': 'C'}
+        'a': {
+            'id': 'a',
+            'label': 'A'
+        },
+        'b': {
+            'id': 'b',
+            'label': 'B'
+        },
+        'c': {
+            'id': 'c',
+            'label': 'C'
+        }
     }
 
     assert correct_output_graph_plaintext_from_file.get_nodes() == nodes
