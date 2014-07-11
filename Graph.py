@@ -542,6 +542,12 @@ class Graph(object):
             return id_.hex
         return id_
 
+    def _hexify_attrs(self, attrs):
+        for key, val in attrs.iteritems():
+            if key in ['src', 'dst', 'id']:
+                attrs[key] = self._get_export_id_str(attrs[key])
+        return attrs
+
     def save_json(self, filename):
         '''Exports the graph to a JSON file for use in the Gaia visualizer.'''
         with open(filename, 'w') as outfile:
@@ -558,7 +564,7 @@ class Graph(object):
                 for i, j in self._g.edges()
                 for key in self._g.edge[i][j]
             ]
-            graph["timeline"] = [ [c.timecode, c.name, c.attributes] for c in self.timeline ]
+            graph["timeline"] = [ [c.timecode, c.name, self._hexify_attrs( c.attributes )] for c in self.timeline ]
             json.dump(graph, outfile, indent=True)
 
     def load_json(self, j):
