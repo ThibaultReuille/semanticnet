@@ -579,7 +579,8 @@ class Graph(object):
         self.timeline = graph["timeline"]
 
         for node in graph["nodes"]:
-            self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+            id_ = self._extract_id(node["id"])
+            self.add_node(node, id_)
 
         for edge in graph["edges"]:
             src = self._extract_id(edge["src"])
