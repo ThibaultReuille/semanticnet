@@ -29,7 +29,7 @@ class CacheMeta(object):
 class Graph(object):
     '''A simple Graph structure which lets you focus on the data.'''
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, json_file=""):
         self._g = nx.MultiGraph()
         self._edges = {}
 
@@ -45,6 +45,9 @@ class Graph(object):
 
         self.verbose = verbose
         self.attr_reserved = ["id", "src", "dst"]
+
+        if json_file:
+            self.load_json(json_file)
 
     def _create_uuid(self):
         '''Create a random UUID for a new node or edge. Checks for collisions.'''
@@ -531,10 +534,19 @@ class Graph(object):
         '''
         return self._get_items_by_attr("edge", attr, val, nosingleton)
 
+    def neighbors(self, id_):
+        return dict([(nid, self.get_node(nid)) for nid in self._g.neighbors(id_)])
+
     def _get_export_id_str(self, id_):
         if id_.__class__.__name__ == "UUID":
             return id_.hex
         return id_
+
+    def _hexify_attrs(self, attrs):
+        for key, val in attrs.iteritems():
+            if key in ['src', 'dst', 'id']:
+                attrs[key] = self._get_export_id_str(attrs[key])
+        return attrs
 
     def save_json(self, filename):
         '''Exports the graph to a JSON file for use in the Gaia visualizer.'''
@@ -552,7 +564,7 @@ class Graph(object):
                 for i, j in self._g.edges()
                 for key in self._g.edge[i][j]
             ]
-            graph["timeline"] = [ [c.timecode, c.name, c.attributes] for c in self.timeline ]
+            graph["timeline"] = [ [c.timecode, c.name, self._hexify_attrs( c.attributes )] for c in self.timeline ]
             json.dump(graph, outfile, indent=True)
 
     def load_json(self, j):
@@ -567,7 +579,8 @@ class Graph(object):
         self.timeline = graph["timeline"]
 
         for node in graph["nodes"]:
-            self._g.add_node(self._extract_id(node["id"]), dict([item for item in node.items() if item[0] != 'id']))
+            id_ = self._extract_id(node["id"])
+            self.add_node(node, id_)
 
         for edge in graph["edges"]:
             src = self._extract_id(edge["src"])

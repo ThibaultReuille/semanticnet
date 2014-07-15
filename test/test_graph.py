@@ -4,6 +4,12 @@ import semanticnet as sn
 import time
 import uuid
 
+def test_json_constructor(fixture_dir, correct_output_filename, correct_output_graph):
+    print("Path: {}".format(os.path.join(fixture_dir, correct_output_filename)))
+    g = sn.DiGraph(json_file=os.path.join(fixture_dir, correct_output_filename))
+    assert g.get_nodes() == correct_output_graph.get_nodes()
+    assert g.get_edges() == correct_output_graph.get_edges()
+
 def test__create_uuid(graph):
     id_ = graph._create_uuid()
     assert id_.__class__.__name__ == 'UUID'
@@ -114,6 +120,34 @@ def test_get_node_attributes(populated_graph):
     )
     with pytest.raises(sn.GraphException):
         populated_graph.get_node_attributes('3caaa8c09148493dbdf02c57deadbeef')
+
+def test_neighbors(populated_digraph):
+   neighbors = populated_digraph.neighbors(uuid.UUID( '3caaa8c09148493dbdf02c574b95526c') )
+   correct_neighbors = {
+           uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ): {
+               'id': uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ),
+               'type': 'B',
+           },
+           uuid.UUID( '3cd197c2cf5e42dc9ccd0c2adcaf4bc2' ): {
+               'id': uuid.UUID( '3cd197c2cf5e42dc9ccd0c2adcaf4bc2' ),
+               'type': 'C',
+           }
+   }
+   assert neighbors == correct_neighbors
+
+def test_predecessors(populated_digraph):
+   predecessors = populated_digraph.predecessors(uuid.UUID( '3cd197c2cf5e42dc9ccd0c2adcaf4bc2') )
+   correct_predecessors = {
+           uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ): {
+               'id': uuid.UUID( '2cdfebf3bf9547f19f0412ccdfbe03b7' ),
+               'type': 'B',
+           },
+           uuid.UUID( '3caaa8c09148493dbdf02c574b95526c' ): {
+               'id': uuid.UUID( '3caaa8c09148493dbdf02c574b95526c' ),
+               'type': 'A',
+           }
+   }
+   assert predecessors == correct_predecessors
 
 def test_set_node_attribute(populated_graph):
     populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'depth', 5)
@@ -478,9 +512,18 @@ def test_save_json_plaintext(test_output_plaintext, test_output_plaintext_correc
 
 def test_load_json(correct_output_graph):
     nodes = {
-        uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'): {'label': 'A'},
-        uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'): {'label': 'B'},
-        uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'): {'label': 'C'}
+        uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'): {
+            'id': uuid.UUID('6cf546f71efe47578f7a1400871ef6b8'),
+            'label': 'A'
+        },
+        uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'): {
+            'id': uuid.UUID('bcb388bb24a74d978fa2006ed278b2fe'),
+            'label': 'B'
+        },
+        uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'): {
+            'id': uuid.UUID('d6523f4f9d5240d2a92e341f4ca00a78'),
+            'label': 'C'
+        }
     }
 
     assert correct_output_graph.get_nodes() == nodes
@@ -515,9 +558,18 @@ def test_load_json_with_object(correct_output):
 
 def test_load_json_plaintext(correct_output_graph_plaintext_from_file):
     nodes = {
-        'a': {'label': 'A'},
-        'b': {'label': 'B'},
-        'c': {'label': 'C'}
+        'a': {
+            'id': 'a',
+            'label': 'A'
+        },
+        'b': {
+            'id': 'b',
+            'label': 'B'
+        },
+        'c': {
+            'id': 'c',
+            'label': 'C'
+        }
     }
 
     assert correct_output_graph_plaintext_from_file.get_nodes() == nodes
