@@ -26,6 +26,8 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--outfile', type=str, help="Output file path")
     parser.add_argument('-c', '--context', action="store_true", default=False,
         help="Only keep relevant unchanged nodes/edges. Cleans up clutter.")
+    parser.add_argument('-m', '--modifications', action="store_true", default=False,
+        help="Check for attribute modifications.")
     parser.add_argument('-u', '--undirected', action="store_true", default=False,
         help='Build undirected graphs for the changesets. Uses directed graphs by default.')
     parser.add_argument('old_graph', type=str)
@@ -39,6 +41,9 @@ if __name__ == "__main__":
 
         if args.context:
             args.outfile += "-c"
+
+        if args.modifications:
+            args.outfile += "-m"
 
         args.outfile += ".json"
 
@@ -64,10 +69,18 @@ if __name__ == "__main__":
         print("and filtering out clutter...")
     print
 
-    D = sn.diff(A, B, args.context)
+    D = sn.diff(A, B, args.context, args.modifications)
     print("Nodes added: {}".format(len([n for n, attrs in D.get_nodes().items() if attrs['diffstatus'] == 'added'])))
     print("Nodes removed: {}".format(len([n for n, attrs in D.get_nodes().items() if attrs['diffstatus'] == 'removed'])))
+
+    if args.modifications:
+        print("Nodes modified: {}".format(len([n for n, attrs in D.get_nodes().items() if attrs['diffstatus'] == 'modified'])))
+
     print("Edges added: {}".format(len([e for e, attrs in D.get_edges().items() if attrs['diffstatus'] == 'added'])))
     print("Edges removed: {}".format(len([e for e, attrs in D.get_edges().items() if attrs['diffstatus'] == 'removed'])))
+
+    if args.modifications:
+        print("Edges modified: {}".format(len([e for e, attrs in D.get_edges().items() if attrs['diffstatus'] == 'modified'])))
+
     print("Writing results to {}".format(args.outfile))
     D.save_json(args.outfile)
