@@ -57,7 +57,16 @@ def _clear_clutter(U):
         if not any(changed):
             U.remove_node(n)
 
-def diff(A, B, context=False):
+def _check_mods(A, B, AB, S):
+    '''Check the 'same' graph for differences in attributes '''
+    for nid, attrs in S.get_nodes().iteritems():
+        if attrs != A.get_node(nid) or attrs != B.get_node(nid):
+            AB.set_node_attribute(nid, 'diffstatus', 'modified')
+    for eid, attrs in S.get_edges().iteritems():
+        if attrs != A.get_edge(eid) or attrs != B.get_edge(eid):
+            AB.set_edge_attribute(eid, 'diffstatus', 'modified')
+
+def diff(A, B, context=False, mods=False):
     '''Given two graphs A and B, where it is generally assumed that B is a "newer" version of A,
     returns a new graph which captures information about which nodes and edges of A were
     removed, added, and remain the same in B.
@@ -68,6 +77,15 @@ def diff(A, B, context=False):
     3. Nodes in A ∩ B are given the "diffstatus" attribute "same"
 
     Notice that the union of 1 - 3 equals A ∪ B.
+
+    The optional parameter context, when true, will prune the graph so that nodes/edges which are
+    the same are only present in the diff graph if:
+    1. An edge incident on/to/from it has been changed, or
+    2. it is connected to a changed node.
+
+    The optional parameter mods, when true, will check for attribute modifications on nodes and
+    edges, in addition to new/removed nodes. Any nodes/edges that have had their attributes
+    changed between A and B are marked with the "diffstatus" attribute as "modified."
 
     WARNING: Currently, this method only works if both A and B were generated with unique IDs in a
     deterministic fashion; i.e., two identical nodes are given the same ID at both points in time.
@@ -89,6 +107,9 @@ def diff(A, B, context=False):
     same = sn.intersection(B, A)
     _mark_nodes_edges_as(AB, same, 'same')
     _check_changed_edges(A, B, AB, same)
+
+    if mods:
+        _check_mods(A, B, AB, same)
 
     if context:
         _clear_clutter(AB)
