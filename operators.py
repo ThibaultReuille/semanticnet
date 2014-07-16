@@ -3,7 +3,6 @@ import semanticnet as sn
 ### Convenience lambdas ###
 def node_in(nid, G):
     '''Returns true if the node n is in the graph G.'''
-    # G = _extract_networkx_graph(G)
     return G._g.has_node(nid)
 
 def edge_in(eid, G):

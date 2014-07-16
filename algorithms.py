@@ -30,12 +30,9 @@ def _check_changed_edges(A, B, AB, I):
             AB.set_edge_attribute(eid, 'diffstatus', 'added')
 
 def _clear_clutter(U):
-    '''For directed graphs, clears up some clutter, so only relevant unchanged nodes/edges
+    '''Clears up some clutter, so only relevant unchanged nodes/edges
     remain in the graph.
     '''
-    # if type(U) is not sn.DiGraph:
-    #     return U
-
     same = [n for n, attrs in U.get_nodes().iteritems() if attrs['diffstatus'] == 'same']
     for n in same:
         # get the list of edges incident to or from this node
