@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# Currently not functional, due to Graphiti not accepting UUIDs.
-
 import argparse
 import semanticnet as sn
 
