@@ -20,7 +20,10 @@ def add_edge(g, src, dst, attrs={}):
 def load_action(a, g):
     actions = []
     for action_type, data in a.iteritems():
-        variety = data.get('variety')
+        try:
+            variety = data.get('variety')
+        except:
+            continue
         if variety != None:
             for v in variety:
                 actions.append(add_node(g, v, {'label': v, 'type': 'action'}))
@@ -55,25 +58,21 @@ if __name__ == "__main__":
     else:
         files = [ os.path.join(vcdb_dir, f) for f in os.listdir(vcdb_dir) if os.path.splitext(f)[1] == '.json' ]
 
-    if len(files) > 100:
-        files = files[:100]
-    
     for f in files:
-        j = json.load(open(f, 'r'))
+        j = json.load(open(f, 'rU'))
         actions = load_action(j['action'], g)
-        assets = load_asset(j['asset']['assets'], g)
         try:
-            victim = add_node(g, j['victim']['victim_id'], {'label': j['victim']['victim_id'], 'type': 'victim', 'depth': 0})
+            assets = load_asset(j['asset']['assets'], g)
+        except KeyError:
+            continue
+        try:
+            victim = add_node(
+                g,
+                j['victim']['victim_id'].encode('utf-8', 'ignore'),
+                {'label': j['victim']['victim_id'].encode('utf-8', 'ignore'), 'type': 'victim', 'depth': 0}
+            )
         except KeyError:
             victim = None
-
-        #import pprint
-        #pprint.pprint("actions")
-        #pprint.pprint(actions)
-        #pprint.pprint("assets")
-        #pprint.pprint(assets)
-        #pprint.pprint("victim")
-        #pprint.pprint(victim)
 
         connect_items(g, assets, actions)
 
