@@ -5,10 +5,6 @@
 import argparse
 import semanticnet as sn
 
-timeline_counter = 100
-timeline_delta = 100
-timeline_delta_small = 50
-
 def add_edges(bg, edges):
     global timeline_counter
     global timeline_delta_small
@@ -63,13 +59,17 @@ def edge_is_visible(g, eid):
     return g.get_edge_attribute(eid, 'og:space:lod') != '0.0'
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser("asn_timeline")
+    parser.add_argument('asn_graph', help="The JSON file of the ASN graph.")
+    args = parser.parse_args()
+
     global timeline_counter
     global timeline_delta
     global timeline_delta_small
 
-    parser = argparse.ArgumentParser("asn_timeline")
-    parser.add_argument('asn_graph', help="The JSON file of the ASN graph.")
-    args = parser.parse_args()
+    timeline_counter = 100
+    timeline_delta = 100
+    timeline_delta_small = 50
 
     queue = {} # maps node IDs to their queue of edges
     g = sn.DiGraph(json_file=args.asn_graph) # the JSON graph
