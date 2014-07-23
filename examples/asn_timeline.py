@@ -16,9 +16,9 @@ def add_edges(bg, edges):
 
 def set_invisible(g):
     for nid in g.get_node_ids():
-        g.set_node_attribute(nid, 'og:space:lod', '0.0' )
+        g.set_node_attribute(nid, 'og:space:lod', 0.0 )
     for eid in g.get_edge_ids():
-        g.set_edge_attribute(eid, 'og:space:lod', '0.0' )
+        g.set_edge_attribute(eid, 'og:space:lod', 0.0 )
 
 def timeline_set_node_visible(g, nid):
     '''Add an event to set the node visible and increment counter.'''
@@ -32,7 +32,7 @@ def timeline_set_node_visible(g, nid):
             'value': '1.0'
         }
     )
-    g.set_node_attribute(nid, 'og:space:lod', '1.0')
+    g.set_node_attribute(nid, 'og:space:lod', 1.0)
     timeline_counter += timeline_delta
 
 def timeline_set_edge_visible(g, eid):
@@ -49,14 +49,14 @@ def timeline_set_edge_visible(g, eid):
             'value': '1.0'
         }
     )
-    g.set_edge_attribute(eid, 'og:space:lod', '1.0')
+    g.set_edge_attribute(eid, 'og:space:lod', 1.0)
     timeline_counter += timeline_delta_small
 
 def node_is_visible(g, nid):
-    return g.get_node_attribute(nid, 'og:space:lod') != '0.0'
+    return g.get_node_attribute(nid, 'og:space:lod') != 0.0
 
 def edge_is_visible(g, eid):
-    return g.get_edge_attribute(eid, 'og:space:lod') != '0.0'
+    return g.get_edge_attribute(eid, 'og:space:lod') != 0.0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("asn_timeline")
