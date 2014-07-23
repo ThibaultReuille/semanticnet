@@ -5,15 +5,6 @@
 import argparse
 import semanticnet as sn
 
-def add_edges(bg, edges):
-    global timeline_counter
-    global timeline_delta_small
-    bg.add_edges(edges) # add them to the bookkeeping graph
-    # add an event for each edge
-    for e, attrs in edges.iteritems():
-        tg.add_event(timeline_counter, "graph:add_link", attrs)
-        timeline_counter += timeline_delta_small
-
 def set_invisible(g):
     for nid in g.get_node_ids():
         g.set_node_attribute(nid, 'og:space:lod', 0.0 )
