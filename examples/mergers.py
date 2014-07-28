@@ -36,7 +36,6 @@ def process_csv_file(graph, filename):
 
 def scale_deal_amts(graph):
     global max_amt
-    print("max_amt = {}".format(max_amt))
     for nid, attrs in graph.get_edges().iteritems():
         if 'graphiti:space:activity' in attrs:
             attrs['graphiti:space:activity'] = math.log(
