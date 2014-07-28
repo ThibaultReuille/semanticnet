@@ -63,7 +63,10 @@ if __name__ == "__main__":
                     "depth": 0
                 })
             else:
-                country_node = country_node["id"]
+                try:
+                    country_node = country_node["id"]
+                except KeyError:
+                    country_node = None
         else:
             country_node = None
 

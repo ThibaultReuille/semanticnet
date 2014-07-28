@@ -2,7 +2,12 @@ import json
 import os
 import pytest
 import semanticnet as sn
+import networkx as nx
 import uuid
+
+@pytest.fixture
+def fixture_dir():
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures")
 
 @pytest.fixture
 def uuid_str():
@@ -54,31 +59,31 @@ def correct_output_graph_plaintext():
     return graph
 
 @pytest.fixture
-def correct_output_graph_plaintext_from_file():
+def correct_output_graph_plaintext_from_file(fixture_dir):
     g = sn.Graph()
-    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct_plaintext.json"))
+    g.load_json(os.path.join(fixture_dir, "test_output_correct_plaintext.json"))
     return g
 
 @pytest.fixture
-def test_output_plaintext(correct_output_graph_plaintext):
-    correct_output_graph_plaintext.save_json("test_output_plaintext.json")
+def test_output_plaintext(correct_output_graph_plaintext, fixture_dir):
+    correct_output_graph_plaintext.save_json(os.path.join(fixture_dir, "test_output_plaintext.json"))
 
-    with open("test_output_plaintext.json") as f:
+    with open(os.path.join(fixture_dir, "test_output_plaintext.json")) as f:
         jsonObj = json.load(f)
 
-    os.remove("test_output_plaintext.json")
+    os.remove(os.path.join(fixture_dir, "test_output_plaintext.json"))
 
     return jsonObj
 
 @pytest.fixture
-def test_output_plaintext_correct():
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct_plaintext.json")) as f:
+def test_output_plaintext_correct(fixture_dir):
+    with open(os.path.join(fixture_dir, "test_output_correct_plaintext.json")) as f:
         jsonObj = json.load(f)
 
     return jsonObj
 
 @pytest.fixture
-def test_output():
+def test_output(fixture_dir):
     graph = sn.Graph()
 
     a = graph.add_node({"label" : "A"}, '6cf546f71efe47578f7a1400871ef6b8')
@@ -89,22 +94,37 @@ def test_output():
     graph.add_edge(b, c, {"type" : "owns"}, '081369f6197b467abe97b3efe8cc4640')
     graph.add_edge(c, a, {"type" : "has"}, 'b3a245098d5d482f893c6d63606c7e91')
 
-    graph.save_json("test_output.json")
+    graph.save_json(os.path.join(fixture_dir, "test_output.json"))
 
-    with open("test_output.json") as f:
+    with open(os.path.join(fixture_dir, "test_output.json")) as f:
         jsonObj = json.load(f)
 
     return jsonObj
 
 @pytest.fixture
-def correct_output():
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json")) as f:
+def correct_output_filename():
+    return "test_output_correct.json"
+
+@pytest.fixture
+def correct_output(fixture_dir, correct_output_filename):
+    with open(os.path.join(fixture_dir, correct_output_filename)) as f:
         jsonObj = json.load(f)
 
     return jsonObj
 
 @pytest.fixture
-def correct_output_graph():
+def correct_output_graph(fixture_dir, correct_output_filename):
     g = sn.Graph()
-    g.load_json(os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_output_correct.json"))
+    g.load_json(os.path.join(fixture_dir, correct_output_filename))
+    return g
+
+@pytest.fixture
+def netx_graph():
+    g = nx.MultiGraph()
+    g.add_node(0, {"type": "A"})
+    g.add_node(1, {"type": "B"})
+    g.add_node(2, {"type": "C"})
+    g.add_edge(0, 1, 0, {"type": "normal"})
+    g.add_edge(0, 2, 1, {"type": "normal"})
+    g.add_edge(1, 2, 2, {"type": "irregular"})
     return g
