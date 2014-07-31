@@ -78,6 +78,35 @@ def test_get_node(populated_graph):
         }
     )
 
+def test_get_or_add_node():
+    dg = sn.DiGraph()
+    key = 'test_key'
+
+    # node is not in before we add it
+    with pytest.raises(KeyError):
+        dg.get_node('test_key')
+
+    # node is in after we add it
+    dg.get_or_add_node(key, data={"type": "test"})
+
+    correct_node = {
+        "id": key,
+        "type": "test"
+    }
+    test_node = dg.get_node(key)
+    assert test_node == correct_node
+
+    # if we call again with the same key, it does not add a node, it returns it
+    # Will also discard the argument data
+    dg.get_or_add_node(key, data={"type": "test2"})
+    correct_nodes = {
+        key: {
+            "id": key,
+            "type": "test" # not test2
+        }
+    }
+    assert dg.get_nodes() == correct_nodes
+
 def test_get_nodes(populated_graph):
     output = {
         uuid.UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'): {
