@@ -239,7 +239,8 @@ or: `pip install -r ./requirements.txt`
 Be sure your `$PYTHONPATH` environment variable is set to the folder you keep all your
 python modules in.
 
-e.g., if you keep your Python modules in `~/src/python`, do:
+e.g., if you keep your Python modules in `~/src/python`, add this line to your
+`.bashrc`/`.bash_profile`/`.zshrc`:
 
 ```sh
 export PYTHONPATH=.:$HOME/src/python
