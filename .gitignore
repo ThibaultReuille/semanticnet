@@ -9,3 +9,6 @@ bro/
 tags
 *.swp
 *.notes
+build/
+dist/
+*.egg-info/

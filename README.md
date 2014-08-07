@@ -130,23 +130,10 @@ Either do: `pip install networkx`
 or: `pip install -r ./requirements.txt`
 
 ### Installation
-#### Set your `$PYTHONPATH`
-Be sure your `$PYTHONPATH` environment variable is set to the folder you keep all your
-python modules in.
-
-e.g., if you keep your Python modules in `~/src/python`, add this line to your
-`.bashrc`/`.bash_profile`/`.zshrc`:
-
 ```sh
-export PYTHONPATH=.:$HOME/src/python
-```
-
-and restart your shell.
-
-#### Download/Install
-```sh
-cd /path/to/your/python/modules
-git clone https://github.com/ThibaultReuille/semanticnet.git
+$ git clone https://github.com/ThibaultReuille/semanticnet.git
+$ cd semanticnet
+$ ./setup.py install
 ```
 
 #### Tests
