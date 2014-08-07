@@ -308,6 +308,12 @@ class Graph(object):
     def remove_edges(self, ids):
         map(self.remove_edge, ids)
 
+    def set_graph_attribute(self, attr_name, value):
+        self._g.graph[attr_name] = value
+
+    def get_graph_attribute(self, attr_name):
+        return self._g.graph[attr_name]
+
     def set_node_attribute(self, id_, attr_name, value):
         '''Sets the attribute attr_name to value for node id_.'''
         id_ = self._extract_id(id_)
@@ -330,8 +336,21 @@ class Graph(object):
         return self._g.nodes()
 
     def get_node(self, id_):
+        '''Get the node with the given ID.'''
         id_ = self._extract_id(id_)
         return self._g.node[id_]
+
+    def get_or_add_node(self, id_, data={}):
+        '''Get the node with the given ID if it exists. If not, create it
+        with the given data attributes. For consistency,
+        this method will always return the attributes of the node, whether it was
+        already in the graph, or was created.
+        '''
+        id_ = self._extract_id(id_)
+        if self.has_node(id_):
+            return self.get_node(id_)
+        self.add_node(data, id_=id_)
+        return self.get_node(id_) # return the attributes, instead of the ID
 
     def has_node(self, id_):
         id_ = self._extract_id(id_)
