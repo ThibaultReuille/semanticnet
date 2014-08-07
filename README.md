@@ -121,22 +121,13 @@ The cache is managed automatically. Any time you add or remove a node/edge with 
 caching, or modify an attribute of a node/edge, semanticnet updates the cache.
 
 ## Installation
-
-### Dependencies
-The only dependency is networkx
-
-Either do: `pip install networkx`
-
-or: `pip install -r ./requirements.txt`
-
-### Installation
 ```sh
 $ git clone https://github.com/ThibaultReuille/semanticnet.git
 $ cd semanticnet
 $ ./setup.py install
 ```
 
-#### Tests
+### Tests
 If you wish to run the test suite, it uses `py.test`. Install it with:
 
 ```sh
