@@ -146,7 +146,7 @@ and restart your shell.
 #### Download/Install
 ```sh
 cd /path/to/your/python/modules
-git clone https://github.com/ThibaultReuille/semantic-net.git semanticnet
+git clone https://github.com/ThibaultReuille/semanticnet.git
 ```
 
 #### Tests
