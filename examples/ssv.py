@@ -21,14 +21,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     g = sn.DiGraph()
-    infile = open(args.input_filename, "rU")
-    reader = csv.reader(infile, delimiter=' ')
-    for row in reader:
-        previous = None
-        for elem in row:
-            current = g.get_or_add_node(elem, {"label": elem})
-            if previous != None:
-                add_edge_ifn(g, previous['id'], current['id'])
-            previous = current
+    with open(args.input_filename, "rU") as infile:
+        reader = csv.reader(infile, delimiter=' ')
+        for row in reader:
+            previous = None
+            for elem in row:
+                current = g.get_or_add_node(elem, {"label": elem})
+                if previous != None:
+                    add_edge_ifn(g, previous['id'], current['id'])
+                previous = current
 
     g.save_json(args.output_filename)
