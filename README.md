@@ -144,10 +144,17 @@ The cache is managed automatically. Any time you add or remove a node/edge with 
 caching, or modify an attribute of a node/edge, semanticnet updates the cache.
 
 ## Installation
+To install, you can simply run
+
 ```sh
-$ git clone https://github.com/ThibaultReuille/semanticnet.git
-$ cd semanticnet
-$ ./setup.py install
+pip install semanticnet
+```
+
+### Manual installation
+```sh
+git clone https://github.com/ThibaultReuille/semanticnet.git
+cd semanticnet
+./setup.py install
 ```
 
 ### Tests
