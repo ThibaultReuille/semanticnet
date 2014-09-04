@@ -4,6 +4,33 @@ semanticnet
 semanticnet is a small python library to create semantic graphs in JSON.
 Those created datasets can then be visualized with the 3D graph engine.
 
+## A quick example
+![A quick example](/ABC.png "A Quick Example")
+
+To generate and save the graph represented by this image, you would write
+
+```python
+import semanticnet as sn
+
+g = sn.Graph()
+
+a = g.add_node({ "label" : "A" })
+b = g.add_node({ "label" : "B" })
+c = g.add_node({ "label" : "C" })
+
+g.add_edge(a, b, { "type" : "belongs" })
+g.add_edge(b, c, { "type" : "owns" })
+g.add_edge(c, a, { "type" : "has" })
+
+g.save_json("output.json")
+```
+
+which would save the graph to a file `output.json`, which could be used by
+[OpenGraphiti](https://github.com/ThibaultReuille/graphiti).
+
+There are several other example scripts included in this repo to demonstrate usage
+of SemanticNet. Each example is documented in the wiki.
+
 ## JSON representation
 When saving graph objects as JSON, the graph is represented internally as one might expect.
 Suppose you have a graph G = (V, E), where
@@ -70,10 +97,6 @@ which indicate the source and destination vertices, respectively.
 Without user definition, the `"id"` fields will default to randomly-generated
 [UUIDs](http://en.wikipedia.org/wiki/Globally_unique_identifier),
 although they can be any hashable type.
-
-## Examples
-Included in this repo are several example scripts to demonstrate usage of SemanticNet.
-Each example is documented in the wiki.
 
 ## Caching
 Should you come across a use case where you'd like quick references to nodes or edges by more than just the ID,
