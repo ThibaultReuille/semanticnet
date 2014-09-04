@@ -5,7 +5,6 @@ import time
 import uuid
 
 def test_json_constructor(fixture_dir, correct_output_filename, correct_output_graph):
-    print("Path: {}".format(os.path.join(fixture_dir, correct_output_filename)))
     g = sn.DiGraph(json_file=os.path.join(fixture_dir, correct_output_filename))
     assert g.get_nodes() == correct_output_graph.get_nodes()
     assert g.get_edges() == correct_output_graph.get_edges()
@@ -35,6 +34,10 @@ def test_add_node(graph):
     node = graph.get_node_attributes(a)
     assert "type" in node
     assert node["type"] == "A"
+
+    # adding a node with reserved attributes should throw an exception
+    with pytest.raises(sn.ReservedAttributeException):
+        graph.add_node({"id": 0})
 
 def test_add_nodes():
     dg = sn.DiGraph()
@@ -207,8 +210,22 @@ def test_add_edge(graph):
     assert "type" in attrs
     assert attrs["type"] == "normal"
 
+    # use a non-existant node. Should throw an exception
     with pytest.raises(sn.GraphException):
         graph.add_edge(a, '3caaa8c09148493dbdf02c57deadbeef')
+
+    # adding an edge with reserved attributes should throw an exception
+    with pytest.raises(sn.ReservedAttributeException):
+        graph.add_edge(a, b, {"id": 0})
+
+    with pytest.raises(sn.ReservedAttributeException):
+        graph.add_edge(a, b, {"src": a})
+
+    with pytest.raises(sn.ReservedAttributeException):
+        graph.add_edge(a, b, {"dst": b})
+
+    with pytest.raises(sn.ReservedAttributeException):
+        graph.add_edge(a, b, {"src": a, "dst": b, "id": 0})
 
 def test_add_edges(populated_digraph):
     g = sn.DiGraph()
@@ -235,10 +252,15 @@ def test_add_edges(populated_digraph):
         (
             '2cdfebf3bf9547f19f0412ccdfbe03b7',
             '3cd197c2cf5e42dc9ccd0c2adcaf4bc2',
-            {"type": "irregular"},
+            # include some dummy reserved attributes
+            # to make sure they correctly get removed
+            {
+                "type": "irregular", "id": "foo",
+                "src": "bar", "dst": "baz"
+            },
             'c172a3599b7d4ef3bbb688277276b763'
         ),
-        # (b, c)
+        # (b, c). leave out id to test that mixing tuple variations works
         (
             '3cd197c2cf5e42dc9ccd0c2adcaf4bc2',
             '2cdfebf3bf9547f19f0412ccdfbe03b7',
@@ -246,8 +268,13 @@ def test_add_edges(populated_digraph):
         )
     ]
     g.add_edges(edges)
-    for eid in populated_digraph.get_edges():
-        assert eid in g.get_edges()
+    gedges = g.get_edges()
+    # make sure all the edges from populated_digraph are present
+    for eid, attrs in populated_digraph.get_edges().iteritems():
+        assert eid in gedges
+        assert gedges[eid] == attrs
+
+    # make sure the last edge in the list was added
     assert g.get_edges_between('3cd197c2cf5e42dc9ccd0c2adcaf4bc2', '2cdfebf3bf9547f19f0412ccdfbe03b7')
 
     g = sn.DiGraph()

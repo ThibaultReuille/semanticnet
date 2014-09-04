@@ -183,6 +183,7 @@ class Graph(object):
         overwrites the node that was previously there, so you must check for the presence
         of a node with an ID manually, if you wish to avoid this.
         '''
+        self._check_reserved_attrs(data)
         if id_ == None:
             id_ = self._create_uuid()
         else:
@@ -220,12 +221,20 @@ class Graph(object):
         and it will return a list of the IDs in the respective order given.
         '''
         if type(nodes) is dict:
-            for id_, data in nodes.items():
+            for id_, data_orig in nodes.items():
+                # copy the attributes so they don't
+                # get deleted from the source data
+                data = copy.deepcopy(data_orig)
+                del data['id']
                 self.add_node(data, id_)
         elif type(nodes) is list:
             ids = []
-            for data in nodes:
-                ids.append(self.add_node(data))
+            for data_orig in nodes:
+                data = copy.deepcopy(data_orig)
+                id_ = data.get('id')
+                if id_ != None:
+                    del data['id']
+                ids.append(self.add_node(data, id_))
             return ids
 
     def remove_node(self, id_):
@@ -256,6 +265,7 @@ class Graph(object):
         overwrites the edge that was previously there, so you must check for the presence
         of an edge with an ID manually, if you wish to avoid this.
         '''
+        self._check_reserved_attrs(data)
         src = self._extract_id(src)
         dst = self._extract_id(dst)
 
@@ -267,7 +277,8 @@ class Graph(object):
         if self._g.has_node(src) and self._g.has_node(dst):
             self.log("add_edge " + str(src) + ", " + str(dst) + ", " + str(data) + " = " + str(id_))
             self._g.add_edge(src, dst, id_,
-                dict(chain(data.items(),
+                dict(chain(
+                    data.items(),
                     {
                         "id": id_,
                         "src": src,
@@ -284,7 +295,7 @@ class Graph(object):
     def add_edges(self, edges):
         '''Adds the edges in the parameter edges, where edges is EITHER:
 
-        1. a list of triples of the form (src, dst, data) or (src, dst, data, id_),
+        1. a list of tuples of the form (src, dst, data) or (src, dst, data, id_),
         where src and dst are the IDs of the nodes,
         data is the dictionary of the edge's attributes,
         and id_ is the unique ID of the edge, e.g.:
@@ -304,12 +315,42 @@ class Graph(object):
         it will be silently ignored!
         '''
         if type(edges) is list:
+            def _remove_reserved(tup, key):
+                if key in tup[2]:
+                    del tup[2][key]
+
             for tup in edges:
+                # make sure the tuple is of the correct form
+                if len(tup) != 3 and len(tup) != 4:
+                    raise GraphException('Given tuple {} is of the wrong form.'.format(tup))
+
+                # make a deep copy, in case the tuple contains references
+                # to data the user doesn't want modified
+                tup = copy.deepcopy(tup)
+
+                # remove reserved attributes from data
+                for r in self.attr_reserved:
+                    _remove_reserved(tup, r)
+
                 self.add_edge(*tup)
         elif type(edges) is dict:
-            for id_, attrs in edges.items():
+            for id_, orig_attrs in edges.items():
+                # copy the attributes so we don't remove the reserved
+                # attributes from the edges!
+                attrs = copy.deepcopy(orig_attrs)
                 try:
-                    self.add_edge(attrs['src'], attrs['dst'], attrs, id_)
+                    # extract and remove the reserved attributes
+                    src = attrs.get('src')
+                    dst = attrs.get('dst')
+                    attr_id = attrs.get('id')
+                    if src != None:
+                        del attrs['src']
+                    if dst != None:
+                        del attrs['dst']
+                    if attr_id != None:
+                        del attrs['id']
+
+                    self.add_edge(src, dst, attrs, id_)
                 except KeyError:
                     continue
 
@@ -339,7 +380,6 @@ class Graph(object):
 
         if self._g.has_node(id_):
             self._check_reserved_attrs(attr_name)
-
             self._g.node[id_][attr_name] = value
             self._update_node_cache(id_, attr_name)
         else:
@@ -614,7 +654,9 @@ class Graph(object):
         self.timeline = graph["timeline"]
 
         for node in graph["nodes"]:
-            id_ = self._extract_id(node["id"])
+            id_ = self._extract_id(node.get("id"))
+            if id_ != None:
+                del node["id"]
             self.add_node(node, id_)
 
         for edge in graph["edges"]:
