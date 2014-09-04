@@ -191,7 +191,7 @@ def test_set_node_attribute(populated_graph):
         populated_graph.set_node_attribute('3caaa8c09148493dbdf02c57deadbeef', 'depht', 5)
 
     # set reserved attribute
-    with pytest.raises(sn.GraphException):
+    with pytest.raises(sn.ReservedAttributeException):
         populated_graph.set_node_attribute('3caaa8c09148493dbdf02c574b95526c', 'id',
             '3caaa8c09148493dbdf02c57deadbeef')
 
@@ -406,15 +406,15 @@ def test_set_edge_attribute(populated_graph):
         populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d51deadbeef', 'weight', 5)
 
     # set reserved attribute
-    with pytest.raises(sn.GraphException):
+    with pytest.raises(sn.ReservedAttributeException):
         populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'id',
             '5f5f44ec7c0144e29c5b7d51deadbeef')
 
-    with pytest.raises(sn.GraphException):
+    with pytest.raises(sn.ReservedAttributeException):
         populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'src',
             '3caaa8c09148493dbdf02c57deadbeef')
 
-    with pytest.raises(sn.GraphException):
+    with pytest.raises(sn.ReservedAttributeException):
         populated_graph.set_edge_attribute('5f5f44ec7c0144e29c5b7d513f92d9ab', 'dst',
             '3caaa8c09148493dbdf02c57deadbeef')
 

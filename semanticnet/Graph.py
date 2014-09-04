@@ -13,6 +13,16 @@ class GraphException(Exception):
     def __str__(self):
         return repr(self.msg)
 
+class ReservedAttributeException(GraphException):
+    '''An exception for when the user attempts to set a reserved attribute.'''
+    def __init__(self, reserved_attr_name):
+        self.reserved_attr_name = reserved_attr_name
+        msg = 'Attribute {} is reserved.'.format(self.reserved_attr_name)
+        GraphException.__init__(self, msg)
+
+    def __str__(self):
+        return repr(self.msg)
+
 class Event(object):
     def __init__(self, timecode, name, attributes):
         self.timecode = timecode
@@ -154,6 +164,15 @@ class Graph(object):
         '''Print the message line to standard output.'''
         if self.verbose:
             print("[SemanticNet] " + line)
+
+    def _check_reserved_attrs(self, data):
+        if type(data) is str:
+            if data in self.attr_reserved:
+                raise ReservedAttributeException(data)
+        elif type(data) is dict:
+            for k, v in data.iteritems():
+                if k in self.attr_reserved:
+                    raise ReservedAttributeException(k)
 
     def add_node(self, data={}, id_=None):
         '''Add a node to the graph, with an optional dict of attributes, data.
@@ -319,8 +338,7 @@ class Graph(object):
         id_ = self._extract_id(id_)
 
         if self._g.has_node(id_):
-            if attr_name in self.attr_reserved:
-                raise GraphException("Attribute {} is reserved.".format(attr_name))
+            self._check_reserved_attrs(attr_name)
 
             self._g.node[id_][attr_name] = value
             self._update_node_cache(id_, attr_name)
@@ -415,9 +433,7 @@ class Graph(object):
         '''Sets the attribute attr_name to value for edge id_.'''
         id_ = self._extract_id(id_)
         if id_ in self._edges:
-            if attr_name in self.attr_reserved:
-                raise GraphException("Attribute {} is reserved.".format(attr_name))
-
+            self._check_reserved_attrs(attr_name)
             self._edges[id_][attr_name] = value
             self._update_edge_cache(id_, attr_name)
         else:
