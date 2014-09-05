@@ -105,15 +105,15 @@ the following graph:
 
 ```python
 >>> g = sn.Graph()
->>> a = g.add_node({"type": "server"}, '3caaa8c09148493dbdf02c574b95526c')
->>> b = g.add_node({"type": "server"}, '2cdfebf3bf9547f19f0412ccdfbe03b7')
->>> c = g.add_node({"type": "client"}, '3cd197c2cf5e42dc9ccd0c2adcaf4bc2')
->>> g.add_edge(a, b, {"method": "GET", "port": 80}, '5f5f44ec7c0144e29c5b7d513f92d9ab')
-UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab')
->>> g.add_edge(a, c, {"method": "GET", "port": 80}, '7eb91be54d3746b89a61a282bcc207bb')
-UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb')
->>> g.add_edge(b, c, {"method": "POST", "port": 443}, 'c172a3599b7d4ef3bbb688277276b763')
-UUID('c172a359-9b7d-4ef3-bbb6-88277276b763')
+>>> a = g.add_node({"type": "server"})
+>>> b = g.add_node({"type": "server"})
+>>> c = g.add_node({"type": "client"})
+>>> g.add_edge(a, b, {"method": "GET", "port": 80})
+UUID('eeb41fd0-9229-47eb-84f0-08ae37a341b2')
+>>> g.add_edge(a, c, {"method": "GET", "port": 80})
+UUID('d490157e-621f-4e4d-ba93-68e83f3230dc')
+>>> g.add_edge(b, c, {"method": "POST", "port": 443})
+UUID('9b2bcaf3-7af7-45a4-871e-d453e1ae8f2c')
 ```
 
 Suppose further that you want to access the nodes by their `"type"` attribute. You can tell semanticnet to
@@ -122,7 +122,7 @@ cache the nodes by the `"type"` attribute, and access them like so:
 ```python
 >>> g.cache_nodes_by("type")
 >>> g.get_nodes_by_attr("type")
-{'client': [{'type': 'client', 'id': UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2')}], 'server': [{'type': 'server', 'id': UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7')}, {'type': 'server', 'id': UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c')}]}
+{'client': [{'type': 'client', 'id': UUID('8ccbcf75-603e-4a53-83a8-ccb0c4680f57')}], 'server': [{'type': 'server', 'id': UUID('125eb4a5-705f-420d-839c-59f15f2238d5')}, {'type': 'server', 'id': UUID('df0ac3ba-920d-4c46-9da8-748cf17b7e45')}]}
 ```
 
 Similarly, you could get a list of all connections by port:
@@ -130,14 +130,14 @@ Similarly, you could get a list of all connections by port:
 ```python
 >>> g.cache_edges_by("port")
 >>> g.get_edges_by_attr("port")
-{80: [{'port': 80, 'src': UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'), 'dst': UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'), 'id': UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb'), 'method': 'GET'}, {'port': 80, 'src': UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'), 'dst': UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'), 'id': UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab'), 'method': 'GET'}], 443: [{'port': 443, 'src': UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'), 'dst': UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'), 'id': UUID('c172a359-9b7d-4ef3-bbb6-88277276b763'), 'method': 'POST'}]}
+{80: [{'port': 80, 'src': UUID('df0ac3ba-920d-4c46-9da8-748cf17b7e45'), 'dst': UUID('8ccbcf75-603e-4a53-83a8-ccb0c4680f57'), 'id': UUID('d490157e-621f-4e4d-ba93-68e83f3230dc'), 'method': 'GET'}, {'port': 80, 'src': UUID('df0ac3ba-920d-4c46-9da8-748cf17b7e45'), 'dst': UUID('125eb4a5-705f-420d-839c-59f15f2238d5'), 'id': UUID('eeb41fd0-9229-47eb-84f0-08ae37a341b2'), 'method': 'GET'}], 443: [{'port': 443, 'src': UUID('125eb4a5-705f-420d-839c-59f15f2238d5'), 'dst': UUID('8ccbcf75-603e-4a53-83a8-ccb0c4680f57'), 'id': UUID('9b2bcaf3-7af7-45a4-871e-d453e1ae8f2c'), 'method': 'POST'}]}
 ```
 
 and you can specify the attribute value as well, to return the list of connections by, say, port 80:
 
 ```python
 >>> g.get_edges_by_attr("port", 80)
-[{'port': 80, 'src': UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'), 'dst': UUID('3cd197c2-cf5e-42dc-9ccd-0c2adcaf4bc2'), 'id': UUID('7eb91be5-4d37-46b8-9a61-a282bcc207bb'), 'method': 'GET'}, {'port': 80, 'src': UUID('3caaa8c0-9148-493d-bdf0-2c574b95526c'), 'dst': UUID('2cdfebf3-bf95-47f1-9f04-12ccdfbe03b7'), 'id': UUID('5f5f44ec-7c01-44e2-9c5b-7d513f92d9ab'), 'method': 'GET'}]
+[{'port': 80, 'src': UUID('df0ac3ba-920d-4c46-9da8-748cf17b7e45'), 'dst': UUID('8ccbcf75-603e-4a53-83a8-ccb0c4680f57'), 'id': UUID('d490157e-621f-4e4d-ba93-68e83f3230dc'), 'method': 'GET'}, {'port': 80, 'src': UUID('df0ac3ba-920d-4c46-9da8-748cf17b7e45'), 'dst': UUID('125eb4a5-705f-420d-839c-59f15f2238d5'), 'id': UUID('eeb41fd0-9229-47eb-84f0-08ae37a341b2'), 'method': 'GET'}]
 ```
 
 The cache is managed automatically. Any time you add or remove a node/edge with an attribute that you are
